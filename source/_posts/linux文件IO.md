@@ -36,7 +36,7 @@ struct file {
 ```
 
 ![](p1lv91x5b.bkt.clouddn.com/struct_file.png)
-
+![](http://images.cnblogs.com/cnblogs_com/Jezze/201112/201112231814299707.png)
 # 文件操作
 ## open操作
 打开一个文件，内核都做了些什么呢？
