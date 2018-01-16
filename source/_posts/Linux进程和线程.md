@@ -4,6 +4,7 @@ tags:
     - linux
 categories:
     - 操作系统
+    - 技术笔记
 ---
 
 ### 问题
