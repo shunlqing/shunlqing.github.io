@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="概述 管道历史 为什么会有无名管道和有名管道 管道本质——管道文件/内核维护 无名管道的读写特性；有名管道的打开特性、读写特性 管道大小与写行为（多进程？） 有名管道的“客户进程和服务器进程”例子 popen/pclose  管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="website">
+<meta property="og:title" content="管道——花园软水管">
+<meta property="og:url" content="http://yoursite.com/inbox/linux_ipc_pipe.html">
+<meta property="og:site_name" content="Shunlqing&#39;s Blog">
+<meta property="og:description" content="概述 管道历史 为什么会有无名管道和有名管道 管道本质——管道文件/内核维护 无名管道的读写特性；有名管道的打开特性、读写特性 管道大小与写行为（多进程？） 有名管道的“客户进程和服务器进程”例子 popen/pclose  管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-01-25T06:30:53.524Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="管道——花园软水管">
+<meta name="twitter:description" content="概述 管道历史 为什么会有无名管道和有名管道 管道本质——管道文件/内核维护 无名管道的读写特性；有名管道的打开特性、读写特性 管道大小与写行为（多进程？） 有名管道的“客户进程和服务器进程”例子 popen/pclose  管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/inbox/linux_ipc_pipe.html"/>
+
+
+
+
+
+  <title>管道——花园软水管 | Shunlqing's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Shunlqing's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">触动、反思，然后重新出发</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+    
+    
+    <div class="post-block page">
+      <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline">管道——花园软水管</h1>
+
+
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+        
+        
+          <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><ul>
+<li>管道历史</li>
+<li>为什么会有无名管道和有名管道</li>
+<li>管道本质——管道文件/内核维护</li>
+<li>无名管道的读写特性；有名管道的打开特性、读写特性</li>
+<li>管道大小与写行为（多进程？）</li>
+<li>有名管道的“客户进程和服务器进程”例子</li>
+<li>popen/pclose</li>
+</ul>
+<h1 id="管道历史"><a href="#管道历史" class="headerlink" title="管道历史"></a>管道历史</h1><p>关于管道，有这么一句话：</p>
+<pre><code>如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。
+</code></pre><p>管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学：</p>
+<pre><code>程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工作。应该让程序处理文本数据流，因为这是一个通用的接口。
+</code></pre><p>也就是说，管道存在的意义就是让程序能够专注自己的目标，而不同进程之间可以相互通信协作，完成一个更大的目标。比如：在主机上，客户进程可以通过管道给文件服务器进程发送文件名，文件服务器打开文件然后将文件数据通过管道传给客户进程，如此，客户进程和文件服务器相互独立，同时相互协作。这其实不仅仅是管道的特点，同时也是其他进程间通信（IPC）手段的特点。不同的IPC实现各有不同，但是目的、哲学道理都是差不多的。</p>
+<p>IPC技术：管道，共享内存，消息队列，信号量，本地套接字等。</p>
+<p>管道一般是单向的，半双工的，像花园的软水管，一边进一边出。要想实现全双工，一般需要两条管道。</p>
+<h1 id="管道基本实现"><a href="#管道基本实现" class="headerlink" title="管道基本实现"></a>管道基本实现</h1><p>每个进程都有自己的独立的地址空间，要想实现进程之间的相互通信，必须采取必要的手段: 共享内存或者借助内核。管道的实现就是借助内核。</p>
+<p>管道的本质就是<strong>内核维护的一段内存</strong>。因为linux“一切皆文件”的思想，管道自然而然就被实现为“管道文件”（向普通文件一样管理），隶属管道文件系统pipefs。因此，和普通文件一样，内核负责维护文件的细节，返回给用户进程的只是一个个“<strong>文件描述符</strong>”，通过文件描述符，进程可以执行打开管道、读写管道的操作。</p>
+<p>管道分为两种：无名管道pipe和有名管道FIFO</p>
+<p><strong>无名管道pipe</strong></p>
+<p>何为无名管道？无名管道就是用户进程只能通过文件描述符fd才能找到的管道，内核没有给其他方式告诉管道在哪里。即没有名字，只有句柄（文件描述符）。一般来讲，文件描述符只会在有亲缘关系的进程间继承，这就限制了无名管道一般只用在有亲缘关系进程间通信。</p>
+<p><strong>有名管道FIFO</strong></p>
+<p>何为有名管道？有名管道，对比无名管道，它跟实体文件名绑定。任何进程只要知道跟管道绑定的文件名，就可以尝试打开管道并操作。这意味着，有名管道可以使用在没有亲缘关系的进程间通信使用。</p>
+<h1 id="无名管道pipe"><a href="#无名管道pipe" class="headerlink" title="无名管道pipe"></a>无名管道pipe</h1><h2 id="创建无名管道pipe"><a href="#创建无名管道pipe" class="headerlink" title="创建无名管道pipe"></a>创建无名管道pipe</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//原型</span><br><span class="line">    int pipe(int fd[2]);</span><br><span class="line"></span><br><span class="line">//例子</span><br><span class="line">    </span><br><span class="line">    int pipefd[2];</span><br><span class="line">    int error = pipe(pipefd); //调用成功，返回两个文件描述符，管道只读端pipefd[0]和管道只写端pipefd[1];</span><br></pre></td></tr></table></figure>
+<h2 id="无名管道使用（搭配进程fork）"><a href="#无名管道使用（搭配进程fork）" class="headerlink" title="无名管道使用（搭配进程fork）"></a>无名管道使用（搭配进程fork）</h2><p>无名管道因其只以文件描述符索引，所以一般的使用方式：</p>
+<pre><code>某个祖先进程（父进程）先创建管道，然后fork出若干子进程，父子进程或兄弟进程之间通过继承得到的管道文件描述符来读写管道，从而达到通信的目的。
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">//Example:</span><br><span class="line"></span><br><span class="line">    int pipefd[2];</span><br><span class="line">    pid_t childpid;</span><br><span class="line"></span><br><span class="line">    pipe(pipefd);</span><br><span class="line"></span><br><span class="line">    if((childpid = fork()) == 0) &#123;</span><br><span class="line">        //子进程</span><br><span class="line">        //关闭管道读端或写端描述符</span><br><span class="line">        //write or read</span><br><span class="line"></span><br><span class="line">        exit(0);</span><br><span class="line">    &#125; else if(childpid &gt; 0)&#123;</span><br><span class="line">        //父进程</span><br><span class="line">        //关闭管道写端或读端描述符</span><br><span class="line">        // read or write</span><br><span class="line"></span><br><span class="line">        // waitpid()</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        //fork error</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>注意点</strong> ：<strong>管道的双方要关闭不需要使用到的文件描述符，为什么？</strong>这涉及管道读取端如何判断对方已经不再写了？管道写端进程如何判断管道另一头已经没有进程在读了？</p>
+<ul>
+<li>当读取端已无进程等待（即fd[0]的引用计数为0 （close））, 此时若有进程对写端继续写，返回EPIPE错误。并产生信号SIGPIPE。</li>
+<li>当写端已无进程再继续写（即fd[1]的引用计数为0 （close））, 若管道的数据读完，将返回文件结束符EOF。</li>
+</ul>
+<p>因此，为了能够正常判断结束条件，进程要关闭其没有使用的管道文件描述符。</p>
+<p><strong>无名管道是不是只能用在用亲缘关系的进程中？</strong></p>
+<pre><code>答案是否定的。因为借助本地套接字，可以在进程间传递文件描述符。
+</code></pre><h2 id="popen-pclose"><a href="#popen-pclose" class="headerlink" title="popen/pclose"></a>popen/pclose</h2><pre><code>![](http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png)
+![](http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png)
+
+popen行为：
+</code></pre>
+        
+      </div>
+      
+      
+      
+    </div>
+    
+    
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/shunlqing.jpg"
+                alt="shunlqing" />
+            
+              <p class="site-author-name" itemprop="name">shunlqing</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#管道历史"><span class="nav-number">2.</span> <span class="nav-text">管道历史</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#管道基本实现"><span class="nav-number">3.</span> <span class="nav-text">管道基本实现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#无名管道pipe"><span class="nav-number">4.</span> <span class="nav-text">无名管道pipe</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建无名管道pipe"><span class="nav-number">4.1.</span> <span class="nav-text">创建无名管道pipe</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#无名管道使用（搭配进程fork）"><span class="nav-number">4.2.</span> <span class="nav-text">无名管道使用（搭配进程fork）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#popen-pclose"><span class="nav-number">4.3.</span> <span class="nav-text">popen/pclose</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">shunlqing</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
