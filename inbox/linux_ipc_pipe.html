@@ -94,10 +94,13 @@
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
 <meta property="og:description" content="概述 管道历史 为什么会有无名管道和有名管道 管道本质——管道文件/内核维护 无名管道的读写特性；有名管道的打开特性、读写特性 管道大小与写行为（多进程？） 有名管道的“客户进程和服务器进程”例子 popen/pclose  管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-25T06:30:53.524Z">
+<meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png">
+<meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png">
+<meta property="og:updated_time" content="2018-01-25T06:35:10.924Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="管道——花园软水管">
 <meta name="twitter:description" content="概述 管道历史 为什么会有无名管道和有名管道 管道本质——管道文件/内核维护 无名管道的读写特性；有名管道的打开特性、读写特性 管道大小与写行为（多进程？） 有名管道的“客户进程和服务器进程”例子 popen/pclose  管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件">
+<meta name="twitter:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png">
 
 
 
@@ -300,10 +303,9 @@
 <p>因此，为了能够正常判断结束条件，进程要关闭其没有使用的管道文件描述符。</p>
 <p><strong>无名管道是不是只能用在用亲缘关系的进程中？</strong></p>
 <pre><code>答案是否定的。因为借助本地套接字，可以在进程间传递文件描述符。
-</code></pre><h2 id="popen-pclose"><a href="#popen-pclose" class="headerlink" title="popen/pclose"></a>popen/pclose</h2><pre><code>![](http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png)
-![](http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png)
-
-popen行为：
+</code></pre><h2 id="popen-pclose"><a href="#popen-pclose" class="headerlink" title="popen/pclose"></a>popen/pclose</h2><p><img src="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png" alt=""></p>
+<p><img src="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png" alt=""></p>
+<pre><code>popen行为：
 </code></pre>
         
       </div>
