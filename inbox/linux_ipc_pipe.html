@@ -96,7 +96,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png">
 <meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png">
-<meta property="og:updated_time" content="2018-01-25T06:35:10.924Z">
+<meta property="og:updated_time" content="2018-01-25T06:46:31.457Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="管道——花园软水管">
 <meta name="twitter:description" content="概述 管道历史 为什么会有无名管道和有名管道 管道本质——管道文件/内核维护 无名管道的读写特性；有名管道的打开特性、读写特性 管道大小与写行为（多进程？） 有名管道的“客户进程和服务器进程”例子 popen/pclose  管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件">
@@ -305,8 +305,8 @@
 <pre><code>答案是否定的。因为借助本地套接字，可以在进程间传递文件描述符。
 </code></pre><h2 id="popen-pclose"><a href="#popen-pclose" class="headerlink" title="popen/pclose"></a>popen/pclose</h2><p><img src="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png" alt=""></p>
 <p><img src="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png" alt=""></p>
-<pre><code>popen行为：
-</code></pre>
+<p>popen行为：fork并执行shell进程，shell进程fork并执行command进程，并返回文件描述符。该文件描述符fd或为读端（管道写端关联到command进程的标准输出），或为写端（管道读端关联到command进程的标准输入）。这取决与popen是以读模式还是以写模式打开。</p>
+
         
       </div>
       
