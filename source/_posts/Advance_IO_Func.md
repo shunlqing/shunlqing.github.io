@@ -29,7 +29,7 @@ categories:
 - sendto/recvfrom一般只在UDP套接字中使用。
 
 ## send/recv
-```
+```c
 #include <sys/socket.h>
 ssize_t recv(int sockfd, void* buff, size_t bytes, int flags);
 ssize_t send(int sockfd, const void* buff, size_t bytes, int flags);
@@ -43,7 +43,7 @@ ssize_t send(int sockfd, const void* buff, size_t bytes, int flags);
 - **MSG_WAITALL**:表示尚未读到请求数目的字节之前不让一个读操作返回。意外情况:a. 捕获一个信号；b.连接被终止；c.套接字发生错误，相应的读函数仍旧可能返回少于请求数目的数据。
 
 ## readv/writev
-```
+```c
 #include <sys/io.h>
 ssize_t readv(int flags, const struct iovec *iov, int iovcnt);
 ssize_t writev(int flags, const struct iovec *iov, int iovcnt);
