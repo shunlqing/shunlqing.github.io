@@ -75,7 +75,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content=",," />
 
 
 
@@ -86,13 +86,18 @@
 
 
 
+<meta name="description" content="vector的增长速度？resize() reserve() shrink_to_fit()resize(new_size)对已经构造部分的大小进行重新整理。  new_size &amp;gt; 当前大小： 新构造部分，由T()默认填充 new_size &amp;lt; 当前大小： 截断已构造部分，销毁  reserve(new_cap)调整容量：  new_cap &amp;lt; 当前容量大小：什么也不做 new">
+<meta name="keywords" content="C++,STL">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Shunlqing&#39;s Blog">
-<meta property="og:url" content="http://yoursite.com/categories/工具/index.html">
+<meta property="og:title" content="STL_Vector">
+<meta property="og:url" content="http://yoursite.com/inbox/stl_vector.html">
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
+<meta property="og:description" content="vector的增长速度？resize() reserve() shrink_to_fit()resize(new_size)对已经构造部分的大小进行重新整理。  new_size &amp;gt; 当前大小： 新构造部分，由T()默认填充 new_size &amp;lt; 当前大小： 截断已构造部分，销毁  reserve(new_cap)调整容量：  new_cap &amp;lt; 当前容量大小：什么也不做 new">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-03-22T09:44:49.570Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Shunlqing&#39;s Blog">
+<meta name="twitter:title" content="STL_Vector">
+<meta name="twitter:description" content="vector的增长速度？resize() reserve() shrink_to_fit()resize(new_size)对已经构造部分的大小进行重新整理。  new_size &amp;gt; 当前大小： 新构造部分，由T()默认填充 new_size &amp;lt; 当前大小： 截断已构造部分，销毁  reserve(new_cap)调整容量：  new_cap &amp;lt; 当前容量大小：什么也不做 new">
 
 
 
@@ -122,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/categories/工具/"/>
+  <link rel="canonical" href="http://yoursite.com/inbox/stl_vector.html"/>
 
 
 
 
 
-  <title>分类: 工具 | Shunlqing's Blog</title>
+  <title>STL_Vector | Shunlqing's Blog</title>
   
 
 
@@ -147,7 +152,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -241,55 +246,51 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block category">
+  <div id="posts" class="posts-expand">
+    
+    
+    
+    <div class="post-block page">
+      <header class="post-header">
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>工具<small>分类</small>
-        </h1>
-      </div>
+	<h1 class="post-title" itemprop="name headline">STL_Vector</h1>
+
+
+
+</header>
 
       
+      
+      
+      <div class="post-body">
         
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
         
-            <a class="post-title-link" href="/2018/01/02/hello-world/" itemprop="url">
-              
-                <span itemprop="name">Hello World</span>
-              
-            </a>
+          <h1 id="vector的增长速度？"><a href="#vector的增长速度？" class="headerlink" title="vector的增长速度？"></a>vector的增长速度？</h1><h1 id="resize-reserve-shrink-to-fit"><a href="#resize-reserve-shrink-to-fit" class="headerlink" title="resize() reserve() shrink_to_fit()"></a>resize() reserve() shrink_to_fit()</h1><h2 id="resize-new-size"><a href="#resize-new-size" class="headerlink" title="resize(new_size)"></a>resize(new_size)</h2><p>对已经构造部分的大小进行重新整理。</p>
+<ul>
+<li>new_size &gt; 当前大小： 新构造部分，由T()默认填充</li>
+<li>new_size &lt; 当前大小： 截断已构造部分，销毁</li>
+</ul>
+<h2 id="reserve-new-cap"><a href="#reserve-new-cap" class="headerlink" title="reserve(new_cap)"></a>reserve(new_cap)</h2><p>调整容量：</p>
+<ul>
+<li>new_cap &lt; 当前容量大小：什么也不做</li>
+<li>new_cap &gt; 当前容量大小：重新分配，移动元素</li>
+</ul>
+<p><strong>好习惯：</strong><br>在定义vector对象的时候，如果已经知道vector对象短时间内会增加到什么样的规模，可以提前调用reserve().以免在push_back()的过程中，反复重新分配，效率低下。</p>
+<h2 id="shrink-to-fit"><a href="#shrink-to-fit" class="headerlink" title="shrink_to_fit()"></a>shrink_to_fit()</h2><p>语义：请求调整当前容量到size的大小。（即把当前多余未构造的空间还给分配器）。</p>
+<ul>
+<li>怎么实现：不能只是部分返还，所以要重新分配一个较小的空间（size()大小），然后拷贝。</li>
+</ul>
+<h1 id="insert最复杂"><a href="#insert最复杂" class="headerlink" title="insert最复杂"></a>insert最复杂</h1>
         
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-01-02T14:51:31+08:00"
-              content="2018-01-02" >
-          01-02
-        </time>
       </div>
-
-    </header>
-  </article>
-
-
+      
+      
       
     </div>
-
+    
+    
+    
   </div>
-  
-  
-  
-
-  
-
 
 
           </div>
@@ -297,6 +298,8 @@
 
 
           
+  
+
 
         </div>
         
@@ -317,8 +320,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -384,6 +396,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#vector的增长速度？"><span class="nav-number">1.</span> <span class="nav-text">vector的增长速度？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#resize-reserve-shrink-to-fit"><span class="nav-number">2.</span> <span class="nav-text">resize() reserve() shrink_to_fit()</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#resize-new-size"><span class="nav-number">2.1.</span> <span class="nav-text">resize(new_size)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reserve-new-cap"><span class="nav-number">2.2.</span> <span class="nav-text">reserve(new_cap)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shrink-to-fit"><span class="nav-number">2.3.</span> <span class="nav-text">shrink_to_fit()</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#insert最复杂"><span class="nav-number">3.</span> <span class="nav-text">insert最复杂</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -515,6 +543,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
 
   
 

@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="-C++," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="概述本文关注内容：右值和右值引用，以及移动语义、完美转发。 发现身边的右值学习右值之所以会觉得很晦涩难懂，是因为我们完全习惯使用了左值。就像突然哪天告诉你，有“暗物质”的存在，你的“常识世界”是一下子不能接受的。 变量（或者说对象）可以看作是内存中的一小段。程序不断运行达到某种功能都是对若干个位于内存的对象，不断加工、修改的，各个对象又相互联系的结果。 在编程过程中，我们会定义各种变量：12345">
+<meta name="keywords" content="-C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解右值">
+<meta property="og:url" content="http://yoursite.com/2018/05/16/rvalue/index.html">
+<meta property="og:site_name" content="Shunlqing&#39;s Blog">
+<meta property="og:description" content="概述本文关注内容：右值和右值引用，以及移动语义、完美转发。 发现身边的右值学习右值之所以会觉得很晦涩难懂，是因为我们完全习惯使用了左值。就像突然哪天告诉你，有“暗物质”的存在，你的“常识世界”是一下子不能接受的。 变量（或者说对象）可以看作是内存中的一小段。程序不断运行达到某种功能都是对若干个位于内存的对象，不断加工、修改的，各个对象又相互联系的结果。 在编程过程中，我们会定义各种变量：12345">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-05-16T09:30:06.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="理解右值">
+<meta name="twitter:description" content="概述本文关注内容：右值和右值引用，以及移动语义、完美转发。 发现身边的右值学习右值之所以会觉得很晦涩难懂，是因为我们完全习惯使用了左值。就像突然哪天告诉你，有“暗物质”的存在，你的“常识世界”是一下子不能接受的。 变量（或者说对象）可以看作是内存中的一小段。程序不断运行达到某种功能都是对若干个位于内存的对象，不断加工、修改的，各个对象又相互联系的结果。 在编程过程中，我们会定义各种变量：12345">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/16/rvalue/"/>
+
+
+
+
+
+  <title>理解右值 | Shunlqing's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Shunlqing's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">触动、反思，然后重新出发</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/16/rvalue/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/shunlqing.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">理解右值</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-16T14:40:15+08:00">
+                2018-05-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>本文关注内容：右值和右值引用，以及移动语义、完美转发。</p>
+<h1 id="发现身边的右值"><a href="#发现身边的右值" class="headerlink" title="发现身边的右值"></a>发现身边的右值</h1><p>学习右值之所以会觉得很晦涩难懂，是因为我们完全习惯使用了左值。就像突然哪天告诉你，有“暗物质”的存在，你的“常识世界”是一下子不能接受的。</p>
+<p>变量（或者说对象）可以看作是内存中的一小段。程序不断运行达到某种功能都是对若干个位于内存的对象，不断加工、修改的，各个对象又相互联系的结果。</p>
+<p>在编程过程中，我们会定义各种变量：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int i = 0;</span><br><span class="line"></span><br><span class="line">class ObjectA &#123;</span><br><span class="line">    ObejctA() &#123;&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">ObjectA a();</span><br></pre></td></tr></table></figure></p>
+<p>这些定义操作，编译器会这样做：</p>
+<ul>
+<li>1.分配一段内存，命名为i，内存大小按照int类型标准分配，然后这段内存初始化为0；</li>
+<li>2.分配一段内存，命名为a，内存大小按照ObjectA类型标准分配，然后这段内存根据默认构造函数初始化。<br>这样，在程序的其他地方，我们可以使用变量名i或者a，来达到修改它们所代表的内存的目的。比如：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i = 1;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>这就是左值。它们是可以取地址的。它们会有个名字，就像门牌号。程序员可以明确地说：我就要使用某某地址上的那个变量i，我要把它改成1。</p>
+<p>那么，内存世界里，除了程序员明确定义的变量占据内存，是否还存在其他构建了的内存对象？答案是有的。在程序编译期间和运行期间，会在内存构造很多没有名字的对象（匿名对象），它们有的为了计算，有的为了支持上层的语言特性。看以下几种情景：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int i = GetValue();</span><br></pre></td></tr></table></figure></p>
+<p>运行过程：程序通过GetValue()计算得出一个“结果”，然后将这个结果拷贝到i所命名的内存位置。我们考察这个“结果”（临时值），它同样需要一个和i一样的内存，只是在拷贝给i之后，这段内存就销毁了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">struct ObjectA&#123;</span><br><span class="line">    ObjectA()&#123;</span><br><span class="line">        cout &lt;&lt; &quot;Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ObjectA(const ObjectA&amp; ) &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Copy constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~ObjectA() &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Destructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    ObjectA a = ObjectA();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用-fno-elide-constructors来取消返回值优化，以便观察临时值的产生。运行结果：</p>
+<pre><code>Constructor
+Copy constructor
+Destructor
+Destructor
+</code></pre><p>可以看出，这里构造了一个临时对象，然后拷贝给a之后，临时对象就销毁了。</p>
+<p>此外，lambda表达式也属于右值，它们在内存中也会以某种对象的形式存在，但是你无法知悉它们的存储位置（获取地址）。</p>
+<h1 id="知道右值的存在，我们如何使用右值？"><a href="#知道右值的存在，我们如何使用右值？" class="headerlink" title="知道右值的存在，我们如何使用右值？"></a>知道右值的存在，我们如何使用右值？</h1><pre><code>答案：右值引用。
+</code></pre><p>和左值引用一样，<strong>右值引用允许你直接引用匿名对象的那段内存，虽然你无法知悉它的地址，但不影响你使用</strong>。编译器使用&amp;&amp;符号表示右值引用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ObjectA &amp;&amp;a = ObjectA(); //语义：直接把临时构造的对象返回给a，a作为这个临时对象的引用供程序员使用。</span><br></pre></td></tr></table></figure></p>
+<p>这里运行结果：</p>
+<pre><code>Constructor
+Destructor
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auto f = []()&#123; return 1; &#125;; //lambda表达式（匿名表达式）可以使用一个右值引用去“承接”它。</span><br><span class="line">f(); //然后就可以使用这个右值引用，在其他地方调用这个lambda表达式</span><br></pre></td></tr></table></figure>
+<p>这里要区分好右值和右值引用。右值是一种对象的概念，而右值引用和左值引用一样，是引用。</p>
+<h1 id="使用右值，好处多多"><a href="#使用右值，好处多多" class="headerlink" title="使用右值，好处多多"></a>使用右值，好处多多</h1><p>通过前面的描述我们可以看到，很多时候，匿名对象（临时对象）的构造是不为人所知的。很多情况下，匿名对象的生命周期很短。它们被构造，然后在短时间内又被销毁。如果构造对象涉及开销比较大的操作，比如malloc。</p>
+<p>我们来看一个配备移动构造函数的类对象的例子。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">//没有移动构造函数</span><br><span class="line">class ObjectA &#123;</span><br><span class="line">public:</span><br><span class="line">    ObjectA() : m_ptr(new char[1]) &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ObjectA(const ObjectA&amp; a) : m_ptr(new char[*a.m_ptr]) //深拷贝</span><br><span class="line">    &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Copy Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~ObjectA() &#123;</span><br><span class="line">        delete[] m_ptr;</span><br><span class="line">        cout &lt;&lt; &quot;Destructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">private:</span><br><span class="line">    char* m_ptr;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    ObjectA a = ObjectA(); //产生临时对象，该条语句运行完，临时对象销毁</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>Constructor
+Copy Constructor
+Destructor
+Destructor
+</code></pre><p>临时对象分配了动态内存，然后短时间内又析构释放。为了定义一个对象，总共发生了两次的new操作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">//配备移动构造函数</span><br><span class="line">class ObjectA &#123;</span><br><span class="line">    // ....</span><br><span class="line"></span><br><span class="line">    ObjectA(const ObjectA&amp; a) : m_ptr(new char[*a.m_ptr])</span><br><span class="line">    &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Copy Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //移动构造函数</span><br><span class="line">    ObjectA(ObjectA &amp;&amp; a) : m_ptr(a.m_ptr) &#123; //</span><br><span class="line">        a.m_ptr = nullptr;</span><br><span class="line">        cout &lt;&lt; &quot;Move Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">    // ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>Constructor
+Move Constructor
+Destructor
+Destructor
+</code></pre><p>只发生一次new操作。我们将临时对象new的动态内存直接转移给了返回的对象。节省开销。</p>
+<p>程序员明确知道，会产生临时变量，而且这个临时变量会在短时间内析构。那么何不将其捕捉，直接利用呢？移动构造函数就是利用这一点。</p>
+<h1 id="左值也可转化为右值——std-move"><a href="#左值也可转化为右值——std-move" class="headerlink" title="左值也可转化为右值——std::move()"></a>左值也可转化为右值——std::move()</h1><p>左值是一种对象的概念，右值也是一种对象的概念。说白了，就是内存嘛。那么，一个左值可以用右值的方式看待，从而使用到右值的一些便利呢。答案是可以。</p>
+<p>比如，我明确清楚某个对象我不会再使用了，但是里面的资源释放掉蛮可惜的，我希望新的对象或者其他对象直接来承接这些资源。<strong>std::move()</strong>模板函数提供了这样的功能。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    ObjectA a = ObjectA();</span><br><span class="line">    </span><br><span class="line">    ObjectA b(std::move(a)); //我们明确不会再使用a,就可以将其所只有的资源转移给新的对象。（具体转移操作由移动拷贝构造完成）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：<br>    Constructor<br>    Move Constructor<br>    Destructor<br>    move …<br>    Move Constructor<br>    Destructor<br>    Destructor</p>
+<p>类似具有<strong>转移语义</strong>的函数还有移动赋值语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ObjectA&amp; operator=(ObjectA&amp;&amp; a) &#123;</span><br><span class="line">    cout &lt;&lt; &quot;operator= &amp;&amp;&quot; &lt;&lt; endl;</span><br><span class="line">    m_ptr = a.m_ptr;</span><br><span class="line">    a.m_ptr = nullptr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="完美转发-–std-forward模板"><a href="#完美转发-–std-forward模板" class="headerlink" title="完美转发 –std::forward模板"></a>完美转发 –std::forward模板</h1><p>基本：一个&amp;&amp;的形参可以匹配左值，也可以匹配右值。&amp;&amp;称为universal reference。</p>
+<p>需求：函数模板中，需要将参数转发给函数函数模板中调用的另一个函数。传入右值类型，转发的也要保留右值类型，传入左值类型，转发也要保留左值类型。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">void process(int&amp; i) &#123; cout &lt;&lt; &quot;lvalue call, i = &quot; &lt;&lt; i &lt;&lt; endl; &#125;</span><br><span class="line">void process(int&amp;&amp; i) &#123; cout &lt;&lt; &quot;rvalue call, i = &quot; &lt;&lt; i &lt;&lt; endl; &#125;</span><br><span class="line"></span><br><span class="line">template &lt;typename T&gt;</span><br><span class="line">void func(T&amp;&amp; t)</span><br><span class="line">&#123;</span><br><span class="line">    process(t); // t是右值引用，但t本身是左值，所以匹配到的是process(int&amp; i)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    int a = 2;</span><br><span class="line">    func(a); </span><br><span class="line"></span><br><span class="line">    func(10); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<pre><code>lvalue call, i = 2
+lvalue call, i = 10
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">template &lt;typename T&gt;</span><br><span class="line">void func(T&amp;&amp; t)</span><br><span class="line">&#123;</span><br><span class="line">    process(std::forward&lt;T&gt;(t)); // t是右值引用，但t本身是左值，所以匹配到的是process(int&amp; i)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<pre><code>lvalue call, i = 2
+rvalue call, i = 10
+</code></pre><p><strong>使用完美转发和移动语义来实现一个泛型的工厂函数</strong>，这个工厂函数可以创建所有类型的对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">template &lt;typename... Args&gt;</span><br><span class="line">T* Instance(Args... args)</span><br><span class="line">&#123;</span><br><span class="line">    return new T(std::forward&lt;Args&gt;(args)...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>[TODO]</p>
+<ul>
+<li>std::move的实现</li>
+<li>std::forward的实现</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/C/" rel="tag"><i class="fa fa-tag"></i> -C++</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/25/linux_ipc_pipe/" rel="next" title="管道——花园软水管">
+                <i class="fa fa-chevron-left"></i> 管道——花园软水管
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/shunlqing.jpg"
+                alt="shunlqing" />
+            
+              <p class="site-author-name" itemprop="name">shunlqing</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#发现身边的右值"><span class="nav-number">2.</span> <span class="nav-text">发现身边的右值</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#知道右值的存在，我们如何使用右值？"><span class="nav-number">3.</span> <span class="nav-text">知道右值的存在，我们如何使用右值？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用右值，好处多多"><span class="nav-number">4.</span> <span class="nav-text">使用右值，好处多多</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#左值也可转化为右值——std-move"><span class="nav-number">5.</span> <span class="nav-text">左值也可转化为右值——std::move()</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#完美转发-–std-forward模板"><span class="nav-number">6.</span> <span class="nav-text">完美转发 –std::forward模板</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">shunlqing</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -86,21 +86,21 @@
 
 
 
-<meta name="description" content="一、小谈管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学： 程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工作">
+<meta name="description" content="一、小谈管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另 一个伟大的发明。 管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学： 程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工">
 <meta name="keywords" content="Linux">
 <meta property="og:type" content="article">
 <meta property="og:title" content="管道——花园软水管">
 <meta property="og:url" content="http://yoursite.com/2018/01/25/linux_ipc_pipe/index.html">
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
-<meta property="og:description" content="一、小谈管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学： 程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工作">
+<meta property="og:description" content="一、小谈管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另 一个伟大的发明。 管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学： 程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_impl.png">
 <meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png">
 <meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png">
-<meta property="og:updated_time" content="2018-01-25T07:45:52.463Z">
+<meta property="og:updated_time" content="2018-01-29T01:53:14.948Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="管道——花园软水管">
-<meta name="twitter:description" content="一、小谈管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。 管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学： 程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工作">
+<meta name="twitter:description" content="一、小谈管道历史关于管道，有这么一句话： 如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另 一个伟大的发明。 管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学： 程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工">
 <meta name="twitter:image" content="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_impl.png">
 
 
@@ -332,9 +332,11 @@
 
       
         <h1 id="一、小谈管道历史"><a href="#一、小谈管道历史" class="headerlink" title="一、小谈管道历史"></a>一、小谈管道历史</h1><p>关于管道，有这么一句话：</p>
-<pre><code>如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。
+<pre><code>如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另
+一个伟大的发明。
 </code></pre><p>管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学：</p>
-<pre><code>程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工作。应该让程序处理文本数据流，因为这是一个通用的接口。
+<pre><code>程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工作。应该让程序处理文本
+数据流，因为这是一个通用的接口。
 </code></pre><p>也就是说，管道存在的意义就是让程序能够专注自己的目标，而不同进程之间可以相互通信协作，完成一个更大的目标。比如：在主机上，客户进程可以通过管道给文件服务器进程发送文件名，文件服务器打开文件然后将文件数据通过管道传给客户进程，如此，客户进程和文件服务器相互独立，同时相互协作。这其实不仅仅是管道的特点，同时也是其他进程间通信（IPC）手段的特点。不同的IPC实现各有不同，但是目的、哲学道理都是差不多的。</p>
 <p>IPC技术：管道，共享内存，消息队列，信号量，本地套接字等。</p>
 <p>管道一般是单向的，半双工的，像花园的软水管，一边进一边出。要想实现全双工，一般需要两条管道。</p>
@@ -346,10 +348,11 @@
 <p>何为无名管道？无名管道就是用户进程只能通过文件描述符fd才能找到的管道，内核没有给其他方式告诉管道在哪里。即没有名字，只有句柄（文件描述符）。一般来讲，文件描述符只会在有亲缘关系的进程间继承，这就限制了无名管道一般只用在有亲缘关系进程间通信。</p>
 <p><strong>有名管道FIFO</strong></p>
 <p>何为有名管道？有名管道，对比无名管道，它跟实体文件名绑定。任何进程只要知道跟管道绑定的文件名，就可以尝试打开管道并操作。这意味着，有名管道可以使用在没有亲缘关系的进程间通信使用。</p>
-<h1 id="三、无名管道pipe"><a href="#三、无名管道pipe" class="headerlink" title="三、无名管道pipe"></a>三、无名管道pipe</h1><h2 id="创建无名管道pipe"><a href="#创建无名管道pipe" class="headerlink" title="创建无名管道pipe"></a>创建无名管道pipe</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//原型</span><br><span class="line">    int pipe(int fd[2]);</span><br><span class="line"></span><br><span class="line">//例子</span><br><span class="line">    </span><br><span class="line">    int pipefd[2];</span><br><span class="line">    int error = pipe(pipefd); //调用成功，返回两个文件描述符，管道只读端pipefd[0]和管道只写端pipefd[1];</span><br></pre></td></tr></table></figure>
+<h1 id="三、无名管道pipe"><a href="#三、无名管道pipe" class="headerlink" title="三、无名管道pipe"></a>三、无名管道pipe</h1><h2 id="创建无名管道pipe"><a href="#创建无名管道pipe" class="headerlink" title="创建无名管道pipe"></a>创建无名管道pipe</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//原型</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">pipe</span><span class="params">(<span class="keyword">int</span> fd[<span class="number">2</span>])</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//例子</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> pipefd[<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">int</span> error = pipe(pipefd); <span class="comment">//调用成功，返回两个文件描述符，</span></span><br><span class="line">    管道只读端pipefd[<span class="number">0</span>]和管道只写端pipefd[<span class="number">1</span>];</span><br></pre></td></tr></table></figure>
 <h2 id="无名管道使用（搭配进程fork）"><a href="#无名管道使用（搭配进程fork）" class="headerlink" title="无名管道使用（搭配进程fork）"></a>无名管道使用（搭配进程fork）</h2><p>无名管道因其只以文件描述符索引，所以一般的使用方式：</p>
-<pre><code>某个祖先进程（父进程）先创建管道，然后fork出若干子进程，父子进程或兄弟进程之间通过继承得到的管道文件描述符来读写管道，从而达到通信的目的。
-</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">//Example:</span><br><span class="line"></span><br><span class="line">    int pipefd[2];</span><br><span class="line">    pid_t childpid;</span><br><span class="line"></span><br><span class="line">    pipe(pipefd);</span><br><span class="line"></span><br><span class="line">    if((childpid = fork()) == 0) &#123;</span><br><span class="line">        //子进程</span><br><span class="line">        //关闭管道读端或写端描述符</span><br><span class="line">        //write or read</span><br><span class="line"></span><br><span class="line">        exit(0);</span><br><span class="line">    &#125; else if(childpid &gt; 0)&#123;</span><br><span class="line">        //父进程</span><br><span class="line">        //关闭管道写端或读端描述符</span><br><span class="line">        // read or write</span><br><span class="line"></span><br><span class="line">        // waitpid()</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        //fork error</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre><code>某个祖先进程（父进程）先创建管道，然后fork出若干子进程，父子进程或兄弟进程之间通过继承得到
+的管道文件描述符来读写管道，从而达到通信的目的。
+</code></pre><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Example:</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> pipefd[<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">pid_t</span> childpid;</span><br><span class="line"></span><br><span class="line">    pipe(pipefd);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>((childpid = fork()) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//子进程</span></span><br><span class="line">        <span class="comment">//关闭管道读端或写端描述符</span></span><br><span class="line">        <span class="comment">//write or read</span></span><br><span class="line"></span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span>(childpid &gt; <span class="number">0</span>)&#123;</span><br><span class="line">        <span class="comment">//父进程</span></span><br><span class="line">        <span class="comment">//关闭管道写端或读端描述符</span></span><br><span class="line">        <span class="comment">// read or write</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// waitpid()</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//fork error</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p><strong>注意点</strong> ：<strong>管道的双方要关闭不需要使用到的文件描述符，为什么？</strong>这涉及管道读取端如何判断对方已经不再写了？管道写端进程如何判断管道另一头已经没有进程在读了？</p>
 <ul>
 <li>当读取端已无进程等待（即fd[0]的引用计数为0 （close））, 此时若有进程对写端继续写，返回EPIPE错误。并产生信号SIGPIPE。</li>
@@ -358,11 +361,11 @@
 <p>因此，为了能够正常判断结束条件，进程要关闭其没有使用的管道文件描述符。</p>
 <p><strong>无名管道是不是只能用在用亲缘关系的进程中？</strong></p>
 <pre><code>答案是否定的。因为借助本地套接字，可以在进程间传递文件描述符。
-</code></pre><h2 id="popen-pclose"><a href="#popen-pclose" class="headerlink" title="popen/pclose"></a>popen/pclose</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">FILE *popen(const char* command, const char *type);</span><br><span class="line">int pclose(FILE *stream);</span><br></pre></td></tr></table></figure>
+</code></pre><h2 id="popen-pclose"><a href="#popen-pclose" class="headerlink" title="popen/pclose"></a>popen/pclose</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function">FILE *<span class="title">popen</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* command, <span class="keyword">const</span> <span class="keyword">char</span> *type)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pclose</span><span class="params">(FILE *stream)</span></span>;</span><br></pre></td></tr></table></figure>
 <p><img src="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png" alt=""></p>
 <p><img src="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png" alt=""></p>
 <p>popen行为：fork并执行shell进程，shell进程fork并执行command进程，并返回文件描述符。该文件描述符fd或为读端（管道写端关联到command进程的标准输出），或为写端（管道读端关联到command进程的标准输入）。这取决与popen是以读模式还是以写模式打开。</p>
-<h1 id="四、命名管道FIFO"><a href="#四、命名管道FIFO" class="headerlink" title="四、命名管道FIFO"></a>四、命名管道FIFO</h1><h2 id="创建管道"><a href="#创建管道" class="headerlink" title="创建管道"></a>创建管道</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int mkfifo(const char* path, mode_t mode);</span><br><span class="line">// 成功，创建一个新的FIFO</span><br><span class="line">// 返回EEXIST错误（指定文件名的FIFO已经存在）</span><br></pre></td></tr></table></figure>
+<h1 id="四、命名管道FIFO"><a href="#四、命名管道FIFO" class="headerlink" title="四、命名管道FIFO"></a>四、命名管道FIFO</h1><h2 id="创建管道"><a href="#创建管道" class="headerlink" title="创建管道"></a>创建管道</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mkfifo</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* path, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="comment">// 成功，创建一个新的FIFO</span></span><br><span class="line"><span class="comment">// 返回EEXIST错误（指定文件名的FIFO已经存在）</span></span><br></pre></td></tr></table></figure>
 <p>参数：</p>
 <ul>
 <li>path: 文件路径名</li>
@@ -445,6 +448,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2018/05/16/rvalue/" rel="prev" title="理解右值">
+                理解右值 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -522,7 +529,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -544,7 +551,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">8</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

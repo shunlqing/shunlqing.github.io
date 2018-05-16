@@ -256,6 +256,189 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/16/rvalue/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/shunlqing.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/16/rvalue/" itemprop="url">理解右值</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-16T14:40:15+08:00">
+                2018-05-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>本文关注内容：右值和右值引用，以及移动语义、完美转发。</p>
+<h1 id="发现身边的右值"><a href="#发现身边的右值" class="headerlink" title="发现身边的右值"></a>发现身边的右值</h1><p>学习右值之所以会觉得很晦涩难懂，是因为我们完全习惯使用了左值。就像突然哪天告诉你，有“暗物质”的存在，你的“常识世界”是一下子不能接受的。</p>
+<p>变量（或者说对象）可以看作是内存中的一小段。程序不断运行达到某种功能都是对若干个位于内存的对象，不断加工、修改的，各个对象又相互联系的结果。</p>
+<p>在编程过程中，我们会定义各种变量：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int i = 0;</span><br><span class="line"></span><br><span class="line">class ObjectA &#123;</span><br><span class="line">    ObejctA() &#123;&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">ObjectA a();</span><br></pre></td></tr></table></figure></p>
+<p>这些定义操作，编译器会这样做：</p>
+<ul>
+<li>1.分配一段内存，命名为i，内存大小按照int类型标准分配，然后这段内存初始化为0；</li>
+<li>2.分配一段内存，命名为a，内存大小按照ObjectA类型标准分配，然后这段内存根据默认构造函数初始化。<br>这样，在程序的其他地方，我们可以使用变量名i或者a，来达到修改它们所代表的内存的目的。比如：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i = 1;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>这就是左值。它们是可以取地址的。它们会有个名字，就像门牌号。程序员可以明确地说：我就要使用某某地址上的那个变量i，我要把它改成1。</p>
+<p>那么，内存世界里，除了程序员明确定义的变量占据内存，是否还存在其他构建了的内存对象？答案是有的。在程序编译期间和运行期间，会在内存构造很多没有名字的对象（匿名对象），它们有的为了计算，有的为了支持上层的语言特性。看以下几种情景：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int i = GetValue();</span><br></pre></td></tr></table></figure></p>
+<p>运行过程：程序通过GetValue()计算得出一个“结果”，然后将这个结果拷贝到i所命名的内存位置。我们考察这个“结果”（临时值），它同样需要一个和i一样的内存，只是在拷贝给i之后，这段内存就销毁了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">struct ObjectA&#123;</span><br><span class="line">    ObjectA()&#123;</span><br><span class="line">        cout &lt;&lt; &quot;Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ObjectA(const ObjectA&amp; ) &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Copy constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~ObjectA() &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Destructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    ObjectA a = ObjectA();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用-fno-elide-constructors来取消返回值优化，以便观察临时值的产生。运行结果：</p>
+<pre><code>Constructor
+Copy constructor
+Destructor
+Destructor
+</code></pre><p>可以看出，这里构造了一个临时对象，然后拷贝给a之后，临时对象就销毁了。</p>
+<p>此外，lambda表达式也属于右值，它们在内存中也会以某种对象的形式存在，但是你无法知悉它们的存储位置（获取地址）。</p>
+<h1 id="知道右值的存在，我们如何使用右值？"><a href="#知道右值的存在，我们如何使用右值？" class="headerlink" title="知道右值的存在，我们如何使用右值？"></a>知道右值的存在，我们如何使用右值？</h1><pre><code>答案：右值引用。
+</code></pre><p>和左值引用一样，<strong>右值引用允许你直接引用匿名对象的那段内存，虽然你无法知悉它的地址，但不影响你使用</strong>。编译器使用&amp;&amp;符号表示右值引用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ObjectA &amp;&amp;a = ObjectA(); //语义：直接把临时构造的对象返回给a，a作为这个临时对象的引用供程序员使用。</span><br></pre></td></tr></table></figure></p>
+<p>这里运行结果：</p>
+<pre><code>Constructor
+Destructor
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auto f = []()&#123; return 1; &#125;; //lambda表达式（匿名表达式）可以使用一个右值引用去“承接”它。</span><br><span class="line">f(); //然后就可以使用这个右值引用，在其他地方调用这个lambda表达式</span><br></pre></td></tr></table></figure>
+<p>这里要区分好右值和右值引用。右值是一种对象的概念，而右值引用和左值引用一样，是引用。</p>
+<h1 id="使用右值，好处多多"><a href="#使用右值，好处多多" class="headerlink" title="使用右值，好处多多"></a>使用右值，好处多多</h1><p>通过前面的描述我们可以看到，很多时候，匿名对象（临时对象）的构造是不为人所知的。很多情况下，匿名对象的生命周期很短。它们被构造，然后在短时间内又被销毁。如果构造对象涉及开销比较大的操作，比如malloc。</p>
+<p>我们来看一个配备移动构造函数的类对象的例子。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">//没有移动构造函数</span><br><span class="line">class ObjectA &#123;</span><br><span class="line">public:</span><br><span class="line">    ObjectA() : m_ptr(new char[1]) &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ObjectA(const ObjectA&amp; a) : m_ptr(new char[*a.m_ptr]) //深拷贝</span><br><span class="line">    &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Copy Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~ObjectA() &#123;</span><br><span class="line">        delete[] m_ptr;</span><br><span class="line">        cout &lt;&lt; &quot;Destructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">private:</span><br><span class="line">    char* m_ptr;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    ObjectA a = ObjectA(); //产生临时对象，该条语句运行完，临时对象销毁</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>Constructor
+Copy Constructor
+Destructor
+Destructor
+</code></pre><p>临时对象分配了动态内存，然后短时间内又析构释放。为了定义一个对象，总共发生了两次的new操作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">//配备移动构造函数</span><br><span class="line">class ObjectA &#123;</span><br><span class="line">    // ....</span><br><span class="line"></span><br><span class="line">    ObjectA(const ObjectA&amp; a) : m_ptr(new char[*a.m_ptr])</span><br><span class="line">    &#123;</span><br><span class="line">        cout &lt;&lt; &quot;Copy Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //移动构造函数</span><br><span class="line">    ObjectA(ObjectA &amp;&amp; a) : m_ptr(a.m_ptr) &#123; //</span><br><span class="line">        a.m_ptr = nullptr;</span><br><span class="line">        cout &lt;&lt; &quot;Move Constructor&quot; &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">    // ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>Constructor
+Move Constructor
+Destructor
+Destructor
+</code></pre><p>只发生一次new操作。我们将临时对象new的动态内存直接转移给了返回的对象。节省开销。</p>
+<p>程序员明确知道，会产生临时变量，而且这个临时变量会在短时间内析构。那么何不将其捕捉，直接利用呢？移动构造函数就是利用这一点。</p>
+<h1 id="左值也可转化为右值——std-move"><a href="#左值也可转化为右值——std-move" class="headerlink" title="左值也可转化为右值——std::move()"></a>左值也可转化为右值——std::move()</h1><p>左值是一种对象的概念，右值也是一种对象的概念。说白了，就是内存嘛。那么，一个左值可以用右值的方式看待，从而使用到右值的一些便利呢。答案是可以。</p>
+<p>比如，我明确清楚某个对象我不会再使用了，但是里面的资源释放掉蛮可惜的，我希望新的对象或者其他对象直接来承接这些资源。<strong>std::move()</strong>模板函数提供了这样的功能。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    ObjectA a = ObjectA();</span><br><span class="line">    </span><br><span class="line">    ObjectA b(std::move(a)); //我们明确不会再使用a,就可以将其所只有的资源转移给新的对象。（具体转移操作由移动拷贝构造完成）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：<br>    Constructor<br>    Move Constructor<br>    Destructor<br>    move …<br>    Move Constructor<br>    Destructor<br>    Destructor</p>
+<p>类似具有<strong>转移语义</strong>的函数还有移动赋值语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ObjectA&amp; operator=(ObjectA&amp;&amp; a) &#123;</span><br><span class="line">    cout &lt;&lt; &quot;operator= &amp;&amp;&quot; &lt;&lt; endl;</span><br><span class="line">    m_ptr = a.m_ptr;</span><br><span class="line">    a.m_ptr = nullptr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="完美转发-–std-forward模板"><a href="#完美转发-–std-forward模板" class="headerlink" title="完美转发 –std::forward模板"></a>完美转发 –std::forward模板</h1><p>基本：一个&amp;&amp;的形参可以匹配左值，也可以匹配右值。&amp;&amp;称为universal reference。</p>
+<p>需求：函数模板中，需要将参数转发给函数函数模板中调用的另一个函数。传入右值类型，转发的也要保留右值类型，传入左值类型，转发也要保留左值类型。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">void process(int&amp; i) &#123; cout &lt;&lt; &quot;lvalue call, i = &quot; &lt;&lt; i &lt;&lt; endl; &#125;</span><br><span class="line">void process(int&amp;&amp; i) &#123; cout &lt;&lt; &quot;rvalue call, i = &quot; &lt;&lt; i &lt;&lt; endl; &#125;</span><br><span class="line"></span><br><span class="line">template &lt;typename T&gt;</span><br><span class="line">void func(T&amp;&amp; t)</span><br><span class="line">&#123;</span><br><span class="line">    process(t); // t是右值引用，但t本身是左值，所以匹配到的是process(int&amp; i)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    int a = 2;</span><br><span class="line">    func(a); </span><br><span class="line"></span><br><span class="line">    func(10); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<pre><code>lvalue call, i = 2
+lvalue call, i = 10
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">template &lt;typename T&gt;</span><br><span class="line">void func(T&amp;&amp; t)</span><br><span class="line">&#123;</span><br><span class="line">    process(std::forward&lt;T&gt;(t)); // t是右值引用，但t本身是左值，所以匹配到的是process(int&amp; i)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<pre><code>lvalue call, i = 2
+rvalue call, i = 10
+</code></pre><p><strong>使用完美转发和移动语义来实现一个泛型的工厂函数</strong>，这个工厂函数可以创建所有类型的对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">template &lt;typename... Args&gt;</span><br><span class="line">T* Instance(Args... args)</span><br><span class="line">&#123;</span><br><span class="line">    return new T(std::forward&lt;Args&gt;(args)...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>[TODO]</p>
+<ul>
+<li>std::move的实现</li>
+<li>std::forward的实现</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/25/linux_ipc_pipe/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -328,9 +511,11 @@
         
           
             <h1 id="一、小谈管道历史"><a href="#一、小谈管道历史" class="headerlink" title="一、小谈管道历史"></a>一、小谈管道历史</h1><p>关于管道，有这么一句话：</p>
-<pre><code>如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另一个伟大的发明。
+<pre><code>如果说Unix是计算机文明中最伟大的发明，那么，Unix下的Pipe管道就是跟随Unix所带来的另
+一个伟大的发明。
 </code></pre><p>管道的出现就是为了使软件开发更加“高内聚，低耦合”。管道的发明者，Malcolm Douglas McIlroy，同时也是Unix创建者及Unix文化缔造者，他的Unix哲学：</p>
-<pre><code>程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工作。应该让程序处理文本数据流，因为这是一个通用的接口。
+<pre><code>程序应该只关注一个目标，并尽可能把它做好。让程序能够互相协同工作。应该让程序处理文本
+数据流，因为这是一个通用的接口。
 </code></pre><p>也就是说，管道存在的意义就是让程序能够专注自己的目标，而不同进程之间可以相互通信协作，完成一个更大的目标。比如：在主机上，客户进程可以通过管道给文件服务器进程发送文件名，文件服务器打开文件然后将文件数据通过管道传给客户进程，如此，客户进程和文件服务器相互独立，同时相互协作。这其实不仅仅是管道的特点，同时也是其他进程间通信（IPC）手段的特点。不同的IPC实现各有不同，但是目的、哲学道理都是差不多的。</p>
 <p>IPC技术：管道，共享内存，消息队列，信号量，本地套接字等。</p>
 <p>管道一般是单向的，半双工的，像花园的软水管，一边进一边出。要想实现全双工，一般需要两条管道。</p>
@@ -342,10 +527,11 @@
 <p>何为无名管道？无名管道就是用户进程只能通过文件描述符fd才能找到的管道，内核没有给其他方式告诉管道在哪里。即没有名字，只有句柄（文件描述符）。一般来讲，文件描述符只会在有亲缘关系的进程间继承，这就限制了无名管道一般只用在有亲缘关系进程间通信。</p>
 <p><strong>有名管道FIFO</strong></p>
 <p>何为有名管道？有名管道，对比无名管道，它跟实体文件名绑定。任何进程只要知道跟管道绑定的文件名，就可以尝试打开管道并操作。这意味着，有名管道可以使用在没有亲缘关系的进程间通信使用。</p>
-<h1 id="三、无名管道pipe"><a href="#三、无名管道pipe" class="headerlink" title="三、无名管道pipe"></a>三、无名管道pipe</h1><h2 id="创建无名管道pipe"><a href="#创建无名管道pipe" class="headerlink" title="创建无名管道pipe"></a>创建无名管道pipe</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//原型</span><br><span class="line">    int pipe(int fd[2]);</span><br><span class="line"></span><br><span class="line">//例子</span><br><span class="line">    </span><br><span class="line">    int pipefd[2];</span><br><span class="line">    int error = pipe(pipefd); //调用成功，返回两个文件描述符，管道只读端pipefd[0]和管道只写端pipefd[1];</span><br></pre></td></tr></table></figure>
+<h1 id="三、无名管道pipe"><a href="#三、无名管道pipe" class="headerlink" title="三、无名管道pipe"></a>三、无名管道pipe</h1><h2 id="创建无名管道pipe"><a href="#创建无名管道pipe" class="headerlink" title="创建无名管道pipe"></a>创建无名管道pipe</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//原型</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">pipe</span><span class="params">(<span class="keyword">int</span> fd[<span class="number">2</span>])</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//例子</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> pipefd[<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">int</span> error = pipe(pipefd); <span class="comment">//调用成功，返回两个文件描述符，</span></span><br><span class="line">    管道只读端pipefd[<span class="number">0</span>]和管道只写端pipefd[<span class="number">1</span>];</span><br></pre></td></tr></table></figure>
 <h2 id="无名管道使用（搭配进程fork）"><a href="#无名管道使用（搭配进程fork）" class="headerlink" title="无名管道使用（搭配进程fork）"></a>无名管道使用（搭配进程fork）</h2><p>无名管道因其只以文件描述符索引，所以一般的使用方式：</p>
-<pre><code>某个祖先进程（父进程）先创建管道，然后fork出若干子进程，父子进程或兄弟进程之间通过继承得到的管道文件描述符来读写管道，从而达到通信的目的。
-</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">//Example:</span><br><span class="line"></span><br><span class="line">    int pipefd[2];</span><br><span class="line">    pid_t childpid;</span><br><span class="line"></span><br><span class="line">    pipe(pipefd);</span><br><span class="line"></span><br><span class="line">    if((childpid = fork()) == 0) &#123;</span><br><span class="line">        //子进程</span><br><span class="line">        //关闭管道读端或写端描述符</span><br><span class="line">        //write or read</span><br><span class="line"></span><br><span class="line">        exit(0);</span><br><span class="line">    &#125; else if(childpid &gt; 0)&#123;</span><br><span class="line">        //父进程</span><br><span class="line">        //关闭管道写端或读端描述符</span><br><span class="line">        // read or write</span><br><span class="line"></span><br><span class="line">        // waitpid()</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        //fork error</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre><code>某个祖先进程（父进程）先创建管道，然后fork出若干子进程，父子进程或兄弟进程之间通过继承得到
+的管道文件描述符来读写管道，从而达到通信的目的。
+</code></pre><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Example:</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> pipefd[<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">pid_t</span> childpid;</span><br><span class="line"></span><br><span class="line">    pipe(pipefd);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>((childpid = fork()) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//子进程</span></span><br><span class="line">        <span class="comment">//关闭管道读端或写端描述符</span></span><br><span class="line">        <span class="comment">//write or read</span></span><br><span class="line"></span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span>(childpid &gt; <span class="number">0</span>)&#123;</span><br><span class="line">        <span class="comment">//父进程</span></span><br><span class="line">        <span class="comment">//关闭管道写端或读端描述符</span></span><br><span class="line">        <span class="comment">// read or write</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// waitpid()</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//fork error</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p><strong>注意点</strong> ：<strong>管道的双方要关闭不需要使用到的文件描述符，为什么？</strong>这涉及管道读取端如何判断对方已经不再写了？管道写端进程如何判断管道另一头已经没有进程在读了？</p>
 <ul>
 <li>当读取端已无进程等待（即fd[0]的引用计数为0 （close））, 此时若有进程对写端继续写，返回EPIPE错误。并产生信号SIGPIPE。</li>
@@ -354,11 +540,11 @@
 <p>因此，为了能够正常判断结束条件，进程要关闭其没有使用的管道文件描述符。</p>
 <p><strong>无名管道是不是只能用在用亲缘关系的进程中？</strong></p>
 <pre><code>答案是否定的。因为借助本地套接字，可以在进程间传递文件描述符。
-</code></pre><h2 id="popen-pclose"><a href="#popen-pclose" class="headerlink" title="popen/pclose"></a>popen/pclose</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">FILE *popen(const char* command, const char *type);</span><br><span class="line">int pclose(FILE *stream);</span><br></pre></td></tr></table></figure>
+</code></pre><h2 id="popen-pclose"><a href="#popen-pclose" class="headerlink" title="popen/pclose"></a>popen/pclose</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function">FILE *<span class="title">popen</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* command, <span class="keyword">const</span> <span class="keyword">char</span> *type)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pclose</span><span class="params">(FILE *stream)</span></span>;</span><br></pre></td></tr></table></figure>
 <p><img src="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_wtype.png" alt=""></p>
 <p><img src="http://p1lv91x5b.bkt.clouddn.com/linux_ipc_pipe_popen_rtype.png" alt=""></p>
 <p>popen行为：fork并执行shell进程，shell进程fork并执行command进程，并返回文件描述符。该文件描述符fd或为读端（管道写端关联到command进程的标准输出），或为写端（管道读端关联到command进程的标准输入）。这取决与popen是以读模式还是以写模式打开。</p>
-<h1 id="四、命名管道FIFO"><a href="#四、命名管道FIFO" class="headerlink" title="四、命名管道FIFO"></a>四、命名管道FIFO</h1><h2 id="创建管道"><a href="#创建管道" class="headerlink" title="创建管道"></a>创建管道</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int mkfifo(const char* path, mode_t mode);</span><br><span class="line">// 成功，创建一个新的FIFO</span><br><span class="line">// 返回EEXIST错误（指定文件名的FIFO已经存在）</span><br></pre></td></tr></table></figure>
+<h1 id="四、命名管道FIFO"><a href="#四、命名管道FIFO" class="headerlink" title="四、命名管道FIFO"></a>四、命名管道FIFO</h1><h2 id="创建管道"><a href="#创建管道" class="headerlink" title="创建管道"></a>创建管道</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mkfifo</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* path, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="comment">// 成功，创建一个新的FIFO</span></span><br><span class="line"><span class="comment">// 返回EEXIST错误（指定文件名的FIFO已经存在）</span></span><br></pre></td></tr></table></figure>
 <p>参数：</p>
 <ul>
 <li>path: 文件路径名</li>
@@ -1390,178 +1576,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/02/inline/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="shunlqing">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Shunlqing's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/02/inline/" itemprop="url">inline函数</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-02T14:51:31+08:00">
-                2018-01-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/编程语言/" itemprop="url" rel="index">
-                    <span itemprop="name">编程语言</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/编程语言/技术笔记/" itemprop="url" rel="index">
-                    <span itemprop="name">技术笔记</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="引子程序"><a href="#引子程序" class="headerlink" title="引子程序"></a>引子程序</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// file.cc</span><br><span class="line">inline void foo(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*函数体*/</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// file.h</span><br><span class="line">void foo(void);</span><br><span class="line"></span><br><span class="line">// main.cc</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面的编码会出现什么问题? 链接错误,显示foo未定义(undefined reference to `foo()’).</p>
-<h1 id="编译器对inline函数的处理"><a href="#编译器对inline函数的处理" class="headerlink" title="编译器对inline函数的处理"></a>编译器对inline函数的处理</h1><p>使用inline函数,意图是在函数调用处直接替换成函数体,省去函数调用,提高函数的执行效率.但编译器在处理的时候,真正的处理流程是什么样的呢?</p>
-<p>我们知道,c/c++程序编译分为几个阶段,预处理-&gt;编译+汇编-&gt;链接.<strong>inline的处理阶段发生在编译阶段.</strong>也就是说,在编译阶段完成后,目标模块的inline函数要么被替换了,要么没有被替换,但是链接时可以找到inline函数的定义.也就是说,在编译阶段之前,目标模块需要看到inline函数的实现.</p>
-<p>拿引子程序来说,编译main.o目标模块时,编译器”看到”了foo的声明,此时它并不知道foo是要inline的.编译file.o目标模块时,编译器看到foo的实现,并且声明为inline,由于foo在file.o没有被使用到,所以,inline函数不被保留.链接的时候,当然也就找不到foo的定义实体了.针对此例子,我们可以在file.c定义一处函数,使用了一次foo(),编译就可以通过.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//file.cc</span><br><span class="line">int foo2()</span><br><span class="line">&#123;</span><br><span class="line">    foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>正确的做法是,inline函数的实现(定义)要跟随其函数声明放在.h文件中.编译器在编译阶段就可以看见函数实现,从而进行替换.(这一点有点向函数模板,函数模板也是要放在声明文件中,不能单独放在源文件中)</p>
-<h1 id="inline和宏的区别"><a href="#inline和宏的区别" class="headerlink" title="inline和宏的区别"></a>inline和宏的区别</h1><ul>
-<li>1.宏define在预处理阶段完成；inline在编译阶段完成；</li>
-<li>2.类型安全检查，inline是函数，需要做类型检查；</li>
-<li>3.替换方式：宏是字符串拷贝替换，会出现边际效应；inline是嵌入代码，在编译过程中不单独产生代码。</li>
-<li>4.宏不可调试，inline函数可以调试。这里的“调试”之意是指在程序的debug版本是没有内联的，编译器会生成像普通函数一样含有调试信息的可执行代码。在release版本，才实现真正的内联。</li>
-<li>5.inline函数可以操作私有数据成员。</li>
-</ul>
-<h1 id="内联函数的使用"><a href="#内联函数的使用" class="headerlink" title="内联函数的使用"></a>内联函数的使用</h1><h2 id="inline函数的编程风格"><a href="#inline函数的编程风格" class="headerlink" title="inline函数的编程风格"></a>inline函数的编程风格</h2><p>关键字inline必须与函数定义放在一起才能使函数真正内联,仅把inlilne放在函数声明的前面不起任何作用.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//Foo不能内联</span><br><span class="line">inline void Foo(int x, int y);</span><br><span class="line">void Foo(int x, int y)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//Foo内联</span><br><span class="line">void Foo(int x, int y);</span><br><span class="line">inline Foo(int x, int y)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>inline是一种”用于实现的关键字”,而不是一种”用于声明的关键字”.</p>
-<h2 id="慎用内联"><a href="#慎用内联" class="headerlink" title="慎用内联"></a>慎用内联</h2><ul>
-<li>如果函数体内的代码过长,使用内联将导致可执行代码膨胀过大</li>
-<li>如果函数体内的代码出现循环或者其他复杂的控制结构,那么执行函数体内代码的时间比函数调用的开销大得多,因此内联的意义不大.</li>
-</ul>
-<h2 id="不要轻易让构造函数和析构函数成为内联函数"><a href="#不要轻易让构造函数和析构函数成为内联函数" class="headerlink" title="不要轻易让构造函数和析构函数成为内联函数"></a>不要轻易让构造函数和析构函数成为内联函数</h2><h2 id="inline仅仅是对编译器的一种请求-编译器可以无视"><a href="#inline仅仅是对编译器的一种请求-编译器可以无视" class="headerlink" title="inline仅仅是对编译器的一种请求,编译器可以无视"></a>inline仅仅是对编译器的一种请求,编译器可以无视</h2><h2 id="inline常跟static一起"><a href="#inline常跟static一起" class="headerlink" title="inline常跟static一起"></a>inline常跟static一起</h2><p>当多个源文件包含同一个inline函数，但是编译器又无视inline请求，如此一来，在每个目标模块中都有该函数的实现实例，造成重定义错误。把inline函数同时声明为static函数（限制其作用域为源文件内部），可以解决问题。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/02/linux文件IO/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1965,7 +1979,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/02/hello-world/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/02/inline/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
@@ -1984,7 +1998,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/02/hello-world/" itemprop="url">Hello World</a></h1>
+                <a class="post-title-link" href="/2018/01/02/inline/" itemprop="url">inline函数</a></h1>
         
 
         <div class="post-meta">
@@ -2019,8 +2033,19 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/工具/" itemprop="url" rel="index">
-                    <span itemprop="name">工具</span>
+                  <a href="/categories/编程语言/" itemprop="url" rel="index">
+                    <span itemprop="name">编程语言</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/编程语言/技术笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
                   </a>
                 </span>
 
@@ -2058,15 +2083,26 @@
       
         
           
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+            <h1 id="引子程序"><a href="#引子程序" class="headerlink" title="引子程序"></a>引子程序</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// file.cc</span><br><span class="line">inline void foo(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*函数体*/</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// file.h</span><br><span class="line">void foo(void);</span><br><span class="line"></span><br><span class="line">// main.cc</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的编码会出现什么问题? 链接错误,显示foo未定义(undefined reference to `foo()’).</p>
+<h1 id="编译器对inline函数的处理"><a href="#编译器对inline函数的处理" class="headerlink" title="编译器对inline函数的处理"></a>编译器对inline函数的处理</h1><p>使用inline函数,意图是在函数调用处直接替换成函数体,省去函数调用,提高函数的执行效率.但编译器在处理的时候,真正的处理流程是什么样的呢?</p>
+<p>我们知道,c/c++程序编译分为几个阶段,预处理-&gt;编译+汇编-&gt;链接.<strong>inline的处理阶段发生在编译阶段.</strong>也就是说,在编译阶段完成后,目标模块的inline函数要么被替换了,要么没有被替换,但是链接时可以找到inline函数的定义.也就是说,在编译阶段之前,目标模块需要看到inline函数的实现.</p>
+<p>拿引子程序来说,编译main.o目标模块时,编译器”看到”了foo的声明,此时它并不知道foo是要inline的.编译file.o目标模块时,编译器看到foo的实现,并且声明为inline,由于foo在file.o没有被使用到,所以,inline函数不被保留.链接的时候,当然也就找不到foo的定义实体了.针对此例子,我们可以在file.c定义一处函数,使用了一次foo(),编译就可以通过.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//file.cc</span><br><span class="line">int foo2()</span><br><span class="line">&#123;</span><br><span class="line">    foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>正确的做法是,inline函数的实现(定义)要跟随其函数声明放在.h文件中.编译器在编译阶段就可以看见函数实现,从而进行替换.(这一点有点向函数模板,函数模板也是要放在声明文件中,不能单独放在源文件中)</p>
+<h1 id="inline和宏的区别"><a href="#inline和宏的区别" class="headerlink" title="inline和宏的区别"></a>inline和宏的区别</h1><ul>
+<li>1.宏define在预处理阶段完成；inline在编译阶段完成；</li>
+<li>2.类型安全检查，inline是函数，需要做类型检查；</li>
+<li>3.替换方式：宏是字符串拷贝替换，会出现边际效应；inline是嵌入代码，在编译过程中不单独产生代码。</li>
+<li>4.宏不可调试，inline函数可以调试。这里的“调试”之意是指在程序的debug版本是没有内联的，编译器会生成像普通函数一样含有调试信息的可执行代码。在release版本，才实现真正的内联。</li>
+<li>5.inline函数可以操作私有数据成员。</li>
+</ul>
+<h1 id="内联函数的使用"><a href="#内联函数的使用" class="headerlink" title="内联函数的使用"></a>内联函数的使用</h1><h2 id="inline函数的编程风格"><a href="#inline函数的编程风格" class="headerlink" title="inline函数的编程风格"></a>inline函数的编程风格</h2><p>关键字inline必须与函数定义放在一起才能使函数真正内联,仅把inlilne放在函数声明的前面不起任何作用.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//Foo不能内联</span><br><span class="line">inline void Foo(int x, int y);</span><br><span class="line">void Foo(int x, int y)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//Foo内联</span><br><span class="line">void Foo(int x, int y);</span><br><span class="line">inline Foo(int x, int y)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>inline是一种”用于实现的关键字”,而不是一种”用于声明的关键字”.</p>
+<h2 id="慎用内联"><a href="#慎用内联" class="headerlink" title="慎用内联"></a>慎用内联</h2><ul>
+<li>如果函数体内的代码过长,使用内联将导致可执行代码膨胀过大</li>
+<li>如果函数体内的代码出现循环或者其他复杂的控制结构,那么执行函数体内代码的时间比函数调用的开销大得多,因此内联的意义不大.</li>
+</ul>
+<h2 id="不要轻易让构造函数和析构函数成为内联函数"><a href="#不要轻易让构造函数和析构函数成为内联函数" class="headerlink" title="不要轻易让构造函数和析构函数成为内联函数"></a>不要轻易让构造函数和析构函数成为内联函数</h2><h2 id="inline仅仅是对编译器的一种请求-编译器可以无视"><a href="#inline仅仅是对编译器的一种请求-编译器可以无视" class="headerlink" title="inline仅仅是对编译器的一种请求,编译器可以无视"></a>inline仅仅是对编译器的一种请求,编译器可以无视</h2><h2 id="inline常跟static一起"><a href="#inline常跟static一起" class="headerlink" title="inline常跟static一起"></a>inline常跟static一起</h2><p>当多个源文件包含同一个inline函数，但是编译器又无视inline请求，如此一来，在每个目标模块中都有该函数的实现实例，造成重定义错误。把inline函数同时声明为static函数（限制其作用域为源文件内部），可以解决问题。</p>
 
           
         
@@ -2156,7 +2192,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2178,7 +2214,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">8</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
