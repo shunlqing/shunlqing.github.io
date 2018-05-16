@@ -95,7 +95,7 @@
 <meta property="og:description" content="文件描述符和句柄句柄，从一般意义上讲，句柄作为内核与用户的交互。用户无法指定内核对象的本体，内核可以提供一个整数值，在内核创建内核对象的时候，返回给用户。用户在想调用该对象的时候，可以指定。 例如，文件在内核的活动对象是一个个file结构，对于用户来说，文件描述符代表这一个文件的标识。用户可以指定文件描述符，内核通过查找来找到文件管理结构file. 因此，文件描述符可以称为“文件句柄”。 内核文件">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/struct_file.png">
-<meta property="og:updated_time" content="2018-01-25T06:48:26.013Z">
+<meta property="og:updated_time" content="2018-05-16T09:51:18.252Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="linux文件IO">
 <meta name="twitter:description" content="文件描述符和句柄句柄，从一般意义上讲，句柄作为内核与用户的交互。用户无法指定内核对象的本体，内核可以提供一个整数值，在内核创建内核对象的时候，返回给用户。用户在想调用该对象的时候，可以指定。 例如，文件在内核的活动对象是一个个file结构，对于用户来说，文件描述符代表这一个文件的标识。用户可以指定文件描述符，内核通过查找来找到文件管理结构file. 因此，文件描述符可以称为“文件句柄”。 内核文件">
@@ -371,7 +371,7 @@
 <li>close_on_exec_init: 表示当执行exec时要关闭的文件描述符位图</li>
 <li>open_fds_init: 保存打开的文件描述符位图</li>
 </ul>
-<h1 id="文件管理结构file"><a href="#文件管理结构file" class="headerlink" title="文件管理结构file"></a>文件管理结构file</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">struct file &#123;</span><br><span class="line">    /*...*/</span><br><span class="line">    const struct file_operations *f_op; 与该文件相关联的操作函数</span><br><span class="line">    atomic_t f_count; 文件的引用计数(有多少进程打开该文件)</span><br><span class="line">    unsigned int f_flags; 对应于open时指定的flag</span><br><span class="line">    mode_t f_mode; 读写模式：open的mod_t mode参数</span><br><span class="line">    off_t f_pos; 该文件在当前进程中的文件偏移量</span><br><span class="line">    /*...*/</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1 id="文件管理结构file"><a href="#文件管理结构file" class="headerlink" title="文件管理结构file"></a>文件管理结构file</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">file</span> &#123;</span></span><br><span class="line">    <span class="comment">/*...*/</span></span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> *<span class="title">f_op</span>;</span> 与该文件相关联的操作函数</span><br><span class="line">    <span class="keyword">atomic_t</span> f_count; 文件的引用计数(有多少进程打开该文件)</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> f_flags; 对应于open时指定的flag</span><br><span class="line">    <span class="keyword">mode_t</span> f_mode; 读写模式：open的<span class="keyword">mod_t</span> mode参数</span><br><span class="line">    <span class="keyword">off_t</span> f_pos; 该文件在当前进程中的文件偏移量</span><br><span class="line">    <span class="comment">/*...*/</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p><img src="http://p1lv91x5b.bkt.clouddn.com/struct_file.png" alt=""></p>
 <h1 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h1><h2 id="open操作"><a href="#open操作" class="headerlink" title="open操作"></a>open操作</h2><p>打开一个文件，内核都做了些什么呢？</p>
 <ul>
@@ -398,7 +398,7 @@
 <h2 id="文件偏移"><a href="#文件偏移" class="headerlink" title="文件偏移"></a>文件偏移</h2><p>文件偏移量是打开文件中比较重要的属性.它代表当前进程对<strong>当前打开文件</strong>的读写位置.一般情况下,读写操作都是从当前的偏移位置开始读写, 并且在读写结束之后更新偏移量.</p>
 <p>刚打开文件时, 文件偏移量为0;</p>
 <p>进程fork之后,父子进程的对同一打开文件的文件偏移量是一样的吗?后面解答.</p>
-<h2 id="读文件-read"><a href="#读文件-read" class="headerlink" title="读文件_read"></a>读文件_read</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssize_t read(int fd, void* buf, size_t count);</span><br></pre></td></tr></table></figure>
+<h2 id="读文件-read"><a href="#读文件-read" class="headerlink" title="读文件_read"></a>读文件_read</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> read(<span class="keyword">int</span> fd, <span class="keyword">void</span>* buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure>
 <p>最一般意义,read尝试从fd中读取count个字节到用户定义缓冲区buf中,并返回实际成功读取的字节数.</p>
 <p><strong>意外情况</strong>:返回值为-1</p>
 <ul>
@@ -412,11 +412,11 @@
 <li>socket文件系统的UDP: UDP报文数据长度小于参数len时,返回实际的数据长度</li>
 <li>…(根据不同的类型小心处理)</li>
 </ul>
-<h2 id="写文件-write"><a href="#写文件-write" class="headerlink" title="写文件_write"></a>写文件_write</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssize_t write(int fd, const void*buf, size_t count);</span><br></pre></td></tr></table></figure>
+<h2 id="写文件-write"><a href="#写文件-write" class="headerlink" title="写文件_write"></a>写文件_write</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span>*buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure>
 <p>write操作根据当前fd的文件偏移量, 写入count个字节数据.与read操作类似,同样会出现<strong>部分写</strong>的情况.</p>
 <p><strong>追加写</strong>–O_APPEND</p>
 <p>当使用O_APPEND以追加的形式打开文件的时候,每次写操作都会先定位到文件的末尾,然后再执行写操作.每次写操作获取到的都是文件(inode)的最新末尾位置(对inode加锁保护, 以避免多进程情况下竞争).</p>
-<h2 id="文件描述符的复制"><a href="#文件描述符的复制" class="headerlink" title="文件描述符的复制"></a>文件描述符的复制</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int dup(int oldfd);</span><br><span class="line">int dup2(int oldfd, int newfd);</span><br><span class="line">int dup3(int oldfd, int newfd, int flags);</span><br></pre></td></tr></table></figure>
+<h2 id="文件描述符的复制"><a href="#文件描述符的复制" class="headerlink" title="文件描述符的复制"></a>文件描述符的复制</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup</span><span class="params">(<span class="keyword">int</span> oldfd)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup2</span><span class="params">(<span class="keyword">int</span> oldfd, <span class="keyword">int</span> newfd)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup3</span><span class="params">(<span class="keyword">int</span> oldfd, <span class="keyword">int</span> newfd, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
 <ul>
 <li>dup:使用一个最小的未使用的文件描述符作为复制后的文件描述符</li>
 <li>dup2:使用用户指定的newfd来复制oldfd,如果newfd已经打开,就先关闭newfd,在复制oldfd(close+dup的原子性调用)</li>
@@ -622,7 +622,8 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -632,6 +633,11 @@
 </div>
 
 
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i><span id="busuanzi_container_site_pv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span>
+  </span>
+  </div>
   <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
 
 

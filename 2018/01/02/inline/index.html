@@ -94,7 +94,7 @@
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
 <meta property="og:description" content="引子程序1234567891011121314// file.ccinline void foo(void)&amp;#123;    /*函数体*/&amp;#125;// file.hvoid foo(void);// main.ccint main()&amp;#123;    foo();&amp;#125; 上面的编码会出现什么问题? 链接错误,显示foo未定义(undefined reference to `foo(">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-13T13:54:58.140Z">
+<meta property="og:updated_time" content="2018-05-16T09:56:40.618Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="inline函数">
 <meta name="twitter:description" content="引子程序1234567891011121314// file.ccinline void foo(void)&amp;#123;    /*函数体*/&amp;#125;// file.hvoid foo(void);// main.ccint main()&amp;#123;    foo();&amp;#125; 上面的编码会出现什么问题? 链接错误,显示foo未定义(undefined reference to `foo(">
@@ -360,11 +360,11 @@
       
 
       
-        <h1 id="引子程序"><a href="#引子程序" class="headerlink" title="引子程序"></a>引子程序</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// file.cc</span><br><span class="line">inline void foo(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*函数体*/</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// file.h</span><br><span class="line">void foo(void);</span><br><span class="line"></span><br><span class="line">// main.cc</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h1 id="引子程序"><a href="#引子程序" class="headerlink" title="引子程序"></a>引子程序</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// file.cc</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">/*函数体*/</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// file.h</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.cc</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上面的编码会出现什么问题? 链接错误,显示foo未定义(undefined reference to `foo()’).</p>
 <h1 id="编译器对inline函数的处理"><a href="#编译器对inline函数的处理" class="headerlink" title="编译器对inline函数的处理"></a>编译器对inline函数的处理</h1><p>使用inline函数,意图是在函数调用处直接替换成函数体,省去函数调用,提高函数的执行效率.但编译器在处理的时候,真正的处理流程是什么样的呢?</p>
 <p>我们知道,c/c++程序编译分为几个阶段,预处理-&gt;编译+汇编-&gt;链接.<strong>inline的处理阶段发生在编译阶段.</strong>也就是说,在编译阶段完成后,目标模块的inline函数要么被替换了,要么没有被替换,但是链接时可以找到inline函数的定义.也就是说,在编译阶段之前,目标模块需要看到inline函数的实现.</p>
-<p>拿引子程序来说,编译main.o目标模块时,编译器”看到”了foo的声明,此时它并不知道foo是要inline的.编译file.o目标模块时,编译器看到foo的实现,并且声明为inline,由于foo在file.o没有被使用到,所以,inline函数不被保留.链接的时候,当然也就找不到foo的定义实体了.针对此例子,我们可以在file.c定义一处函数,使用了一次foo(),编译就可以通过.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//file.cc</span><br><span class="line">int foo2()</span><br><span class="line">&#123;</span><br><span class="line">    foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>拿引子程序来说,编译main.o目标模块时,编译器”看到”了foo的声明,此时它并不知道foo是要inline的.编译file.o目标模块时,编译器看到foo的实现,并且声明为inline,由于foo在file.o没有被使用到,所以,inline函数不被保留.链接的时候,当然也就找不到foo的定义实体了.针对此例子,我们可以在file.c定义一处函数,使用了一次foo(),编译就可以通过.<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//file.cc</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">foo2</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>正确的做法是,inline函数的实现(定义)要跟随其函数声明放在.h文件中.编译器在编译阶段就可以看见函数实现,从而进行替换.(这一点有点向函数模板,函数模板也是要放在声明文件中,不能单独放在源文件中)</p>
 <h1 id="inline和宏的区别"><a href="#inline和宏的区别" class="headerlink" title="inline和宏的区别"></a>inline和宏的区别</h1><ul>
 <li>1.宏define在预处理阶段完成；inline在编译阶段完成；</li>
@@ -373,7 +373,7 @@
 <li>4.宏不可调试，inline函数可以调试。这里的“调试”之意是指在程序的debug版本是没有内联的，编译器会生成像普通函数一样含有调试信息的可执行代码。在release版本，才实现真正的内联。</li>
 <li>5.inline函数可以操作私有数据成员。</li>
 </ul>
-<h1 id="内联函数的使用"><a href="#内联函数的使用" class="headerlink" title="内联函数的使用"></a>内联函数的使用</h1><h2 id="inline函数的编程风格"><a href="#inline函数的编程风格" class="headerlink" title="inline函数的编程风格"></a>inline函数的编程风格</h2><p>关键字inline必须与函数定义放在一起才能使函数真正内联,仅把inlilne放在函数声明的前面不起任何作用.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//Foo不能内联</span><br><span class="line">inline void Foo(int x, int y);</span><br><span class="line">void Foo(int x, int y)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//Foo内联</span><br><span class="line">void Foo(int x, int y);</span><br><span class="line">inline Foo(int x, int y)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="内联函数的使用"><a href="#内联函数的使用" class="headerlink" title="内联函数的使用"></a>内联函数的使用</h1><h2 id="inline函数的编程风格"><a href="#inline函数的编程风格" class="headerlink" title="inline函数的编程风格"></a>inline函数的编程风格</h2><p>关键字inline必须与函数定义放在一起才能使函数真正内联,仅把inlilne放在函数声明的前面不起任何作用.<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Foo不能内联</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">Foo</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Foo</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Foo内联</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Foo</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="title">Foo</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>inline是一种”用于实现的关键字”,而不是一种”用于声明的关键字”.</p>
 <h2 id="慎用内联"><a href="#慎用内联" class="headerlink" title="慎用内联"></a>慎用内联</h2><ul>
 <li>如果函数体内的代码过长,使用内联将导致可执行代码膨胀过大</li>
@@ -578,7 +578,8 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -588,6 +589,11 @@
 </div>
 
 
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i><span id="busuanzi_container_site_pv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span>
+  </span>
+  </div>
   <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
 
 

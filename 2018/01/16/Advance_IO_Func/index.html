@@ -94,7 +94,7 @@
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
 <meta property="og:description" content="一、概述讨论几个问题：  为避免函数调用不可预期的永久阻塞，可以对IO操作设置超时，设置超时有哪些方法？ 最基本的读写函数read/write，及其各种变体（send, recv, recvmsg….）是什么样的关系？ 如果仅仅想查看套接字接收缓冲区的数据而不读取，要怎么做？  二、为套接字设置超时抛出各种具体方法：  信号中断：alarm函数 + SIGALRM信号（缺点:干扰程序正常alarm">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-16T11:38:49.180Z">
+<meta property="og:updated_time" content="2018-05-16T09:50:24.596Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="高级IO函数">
 <meta name="twitter:description" content="一、概述讨论几个问题：  为避免函数调用不可预期的永久阻塞，可以对IO操作设置超时，设置超时有哪些方法？ 最基本的读写函数read/write，及其各种变体（send, recv, recvmsg….）是什么样的关系？ 如果仅仅想查看套接字接收缓冲区的数据而不读取，要怎么做？  二、为套接字设置超时抛出各种具体方法：  信号中断：alarm函数 + SIGALRM信号（缺点:干扰程序正常alarm">
@@ -369,7 +369,7 @@
 <li>recvmsg/sendmsg是最通用的函数，它集中了前面集中的所有特性。但是这组只能在套接字描述符中使用。</li>
 <li>sendto/recvfrom一般只在UDP套接字中使用。</li>
 </ul>
-<h2 id="send-recv"><a href="#send-recv" class="headerlink" title="send/recv"></a>send/recv</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;sys/socket.h&gt;</span><br><span class="line">ssize_t recv(int sockfd, void* buff, size_t bytes, int flags);</span><br><span class="line">ssize_t send(int sockfd, const void* buff, size_t bytes, int flags);</span><br></pre></td></tr></table></figure>
+<h2 id="send-recv"><a href="#send-recv" class="headerlink" title="send/recv"></a>send/recv</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> recv(<span class="keyword">int</span> sockfd, <span class="keyword">void</span>* buff, <span class="keyword">size_t</span> bytes, <span class="keyword">int</span> flags);</span><br><span class="line"><span class="keyword">ssize_t</span> send(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> <span class="keyword">void</span>* buff, <span class="keyword">size_t</span> bytes, <span class="keyword">int</span> flags);</span><br></pre></td></tr></table></figure>
 <p><strong>flags</strong>——值参数</p>
 <ul>
 <li>MSG_DONTROUTE: 发送操作无须路由，仅限发送操作。表示目的主机在某个直接连接的本地网络上。</li>
@@ -378,7 +378,7 @@
 <li><strong>MSG_PEEK</strong>:表示仅查看可读取的数据，不作读取。适用于recv和recvmsg。</li>
 <li><strong>MSG_WAITALL</strong>:表示尚未读到请求数目的字节之前不让一个读操作返回。意外情况:a. 捕获一个信号；b.连接被终止；c.套接字发生错误，相应的读函数仍旧可能返回少于请求数目的数据。</li>
 </ul>
-<h2 id="readv-writev"><a href="#readv-writev" class="headerlink" title="readv/writev"></a>readv/writev</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;sys/io.h&gt;</span><br><span class="line">ssize_t readv(int flags, const struct iovec *iov, int iovcnt);</span><br><span class="line">ssize_t writev(int flags, const struct iovec *iov, int iovcnt);</span><br><span class="line"></span><br><span class="line">struct iovec &#123;</span><br><span class="line">    void *iov_base; //缓冲区起始地址</span><br><span class="line">    void *iov_len; //缓冲区长度</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="readv-writev"><a href="#readv-writev" class="headerlink" title="readv/writev"></a>readv/writev</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/io.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> readv(<span class="keyword">int</span> flags, <span class="keyword">const</span> struct iovec *iov, <span class="keyword">int</span> iovcnt);</span><br><span class="line"><span class="keyword">ssize_t</span> writev(<span class="keyword">int</span> flags, <span class="keyword">const</span> struct iovec *iov, <span class="keyword">int</span> iovcnt);</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span> *iov_base; <span class="comment">//缓冲区起始地址</span></span><br><span class="line">    <span class="keyword">void</span> *iov_len; <span class="comment">//缓冲区长度</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>注：</p>
 <ul>
 <li>writev是原子调用，对于数据报协议，一次writev调用只会产生一个UDP数据报。</li>
@@ -591,7 +591,8 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -601,6 +602,11 @@
 </div>
 
 
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i><span id="busuanzi_container_site_pv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span>
+  </span>
+  </div>
   <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
 
 

@@ -94,7 +94,7 @@
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
 <meta property="og:description" content="讨论进程环境中几个点：  进程终止：exit和_exit的关系 环境变量的设置,putenv的陷阱 内存问题 longjmp的原理与陷阱  exit和_exit当一个进程正常终止时，系统需要做一系列的处理。这里涉及到两个层面：C库和内核的处理：  C库层做的工作：刷新IO缓冲区，执行所有注册的退出函数； 内核层做的工作：回收进程所持有的一些资源；  进程正常退出时，先执行exit函数(C库层面)，">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-13T13:54:06.238Z">
+<meta property="og:updated_time" content="2018-05-16T09:51:59.722Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="进程环境">
 <meta name="twitter:description" content="讨论进程环境中几个点：  进程终止：exit和_exit的关系 环境变量的设置,putenv的陷阱 内存问题 longjmp的原理与陷阱  exit和_exit当一个进程正常终止时，系统需要做一系列的处理。这里涉及到两个层面：C库和内核的处理：  C库层做的工作：刷新IO缓冲区，执行所有注册的退出函数； 内核层做的工作：回收进程所持有的一些资源；  进程正常退出时，先执行exit函数(C库层面)，">
@@ -383,14 +383,14 @@
 <li>使用_exit(n),因为没有正常执行C库层面的清理工作，所以我们把它归纳到异常状况。但是有时候_exit是必要的，比如多进程的时候。</li>
 <li>信号中断。当出现信号中断，信号中断很多的处理都是进程终止，此时执行的直接是内核退出进程的操作，不会返回到C库执行清理工作。</li>
 </ul>
-<h2 id="exit"><a href="#exit" class="headerlink" title="exit"></a>exit</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void exit(int status);</span><br></pre></td></tr></table></figure>
+<h2 id="exit"><a href="#exit" class="headerlink" title="exit"></a>exit</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">exit</span><span class="params">(<span class="keyword">int</span> status)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>exit()执行的动作：</p>
 <ul>
 <li>调用注册的退出处理程序（通过atexit()和on_exit()注册的函数），其执行顺序与注册顺序相反（函数栈）</li>
 <li>刷新stdio流缓冲区</li>
 <li>使用由status提供的值执行_exit()系统调用。</li>
 </ul>
-<h2 id="exit-1"><a href="#exit-1" class="headerlink" title="_exit()"></a>_exit()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void _exit(int status);</span><br></pre></td></tr></table></figure>
+<h2 id="exit-1"><a href="#exit-1" class="headerlink" title="_exit()"></a>_exit()</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> _exit(<span class="keyword">int</span> status);</span><br></pre></td></tr></table></figure>
 <p>_exit()是系统调用，即其直接陷入内核，执行内核退出进程的操作（该操作无论是进程正常终止还是异常终止都会执行）</p>
 <h2 id="内核退出进程的操作"><a href="#内核退出进程的操作" class="headerlink" title="内核退出进程的操作"></a>内核退出进程的操作</h2><ul>
 <li>关闭文件描述符（释放任何文件锁），目录流</li>
@@ -399,19 +399,17 @@
 <li>取消该进程调用mmap所创建的任何内存映射</li>
 <li>等等。。。</li>
 </ul>
-<h2 id="使用atexit注册退出处理程序"><a href="#使用atexit注册退出处理程序" class="headerlink" title="使用atexit注册退出处理程序"></a>使用atexit注册退出处理程序</h2><h1 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int putenv(char *string);</span><br><span class="line">int setenv(const char * name, const char *value, int overwrite);</span><br></pre></td></tr></table></figure>
+<h2 id="使用atexit注册退出处理程序"><a href="#使用atexit注册退出处理程序" class="headerlink" title="使用atexit注册退出处理程序"></a>使用atexit注册退出处理程序</h2><h1 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">putenv</span><span class="params">(<span class="keyword">char</span> *<span class="built_in">string</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setenv</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * name, <span class="keyword">const</span> <span class="keyword">char</span> *value, <span class="keyword">int</span> overwrite)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>关键注意点：</p>
 <ul>
 <li>putenv直接使用的是string的内存空间，即需要保证string指向的变量长期存在，全局变量或动态内存等；setenv不存在这个问题，它会做相应的拷贝。</li>
 <li>putenv参数形式，string的格式是“名字=值”；setenv参数分开</li>
 </ul>
-<h1 id="内存问题"><a href="#内存问题" class="headerlink" title="内存问题"></a>内存问题</h1><h2 id="慎用realloc"><a href="#慎用realloc" class="headerlink" title="慎用realloc"></a>慎用realloc</h2><h2 id="防止内存越界的几个新旧函数"><a href="#防止内存越界的几个新旧函数" class="headerlink" title="防止内存越界的几个新旧函数"></a>防止内存越界的几个新旧函数</h2><p><strong>使用strncat替代strcat</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">char *strncat(char *dest, const char * src, size_t n);</span><br></pre></td></tr></table></figure></p>
+<h1 id="内存问题"><a href="#内存问题" class="headerlink" title="内存问题"></a>内存问题</h1><h2 id="慎用realloc"><a href="#慎用realloc" class="headerlink" title="慎用realloc"></a>慎用realloc</h2><h2 id="防止内存越界的几个新旧函数"><a href="#防止内存越界的几个新旧函数" class="headerlink" title="防止内存越界的几个新旧函数"></a>防止内存越界的几个新旧函数</h2><p><strong>使用strncat替代strcat</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">strncat</span><span class="params">(<span class="keyword">char</span> *dest, <span class="keyword">const</span> <span class="keyword">char</span> * src, <span class="keyword">size_t</span> n)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>从src中最多追加n个字符到dest字符串的后面。该函数自动追加‘\0’到dest的后面，所以<strong>n应该为dest可用空间减1</strong>。</p>
-<p><strong>使用strncpy代替strcpy</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">char *strncpy(char *dest, const char *src, size_t n);</span><br></pre></td></tr></table></figure></p>
+<p><strong>使用strncpy代替strcpy</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">strncpy</span><span class="params">(<span class="keyword">char</span> *dest, <span class="keyword">const</span> <span class="keyword">char</span> *src, <span class="keyword">size_t</span> n)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>从src中最多复制n个字符到dest字符串中。需要预留‘\0’的一个字节，并手动添加‘\0’。</p>
-<p><strong>使用snprintf代替sprintf</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int snprintf(char *src, size_t size, const char* format, ...);</span><br></pre></td></tr></table></figure></p>
-<p>包含‘\0’，最多复制size个字符。</p>
-<p><strong>使用fgets代替gets</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">char *gets(char *str);</span><br><span class="line">char *fgets(char *s, int size, FILE *stream);</span><br></pre></td></tr></table></figure></p>
+<p><strong>使用snprintf代替sprintf</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">snprintf</span><span class="params">(<span class="keyword">char</span> *src, <span class="keyword">size_t</span> size, <span class="keyword">const</span> <span class="keyword">char</span>* format, ...)</span></span>;</span><br><span class="line">```c</span><br><span class="line">包含‘\<span class="number">0</span>’，最多复制size个字符。</span><br><span class="line"></span><br><span class="line">**使用fgets代替gets**</span><br><span class="line">```c</span><br><span class="line">    <span class="function"><span class="keyword">char</span> *<span class="title">gets</span><span class="params">(<span class="keyword">char</span> *str)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">char</span> *<span class="title">fgets</span><span class="params">(<span class="keyword">char</span> *s, <span class="keyword">int</span> size, FILE *stream)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>gets函数从来不检查缓冲区的大小。fgets最多会复制size-1字节到缓冲区s中，并且会在最后一个字符后面自动追加‘\0’。</p>
 <h2 id="如何定位内存问题——Valgrind"><a href="#如何定位内存问题——Valgrind" class="headerlink" title="如何定位内存问题——Valgrind"></a>如何定位内存问题——Valgrind</h2><p>常见内存问题：</p>
 <ul>
@@ -423,7 +421,7 @@
 <li>使用野指针</li>
 </ul>
 <h1 id="“长跳转”longjmp"><a href="#“长跳转”longjmp" class="headerlink" title="“长跳转”longjmp"></a>“长跳转”longjmp</h1><p>goto是在函数内部实现短跳转，要实现跨函数跳转，得使用长跳转longjmp。</p>
-<h2 id="longjmp的原理"><a href="#longjmp的原理" class="headerlink" title="longjmp的原理"></a>longjmp的原理</h2><p>和进程切换、信号中断返回的思想类似，要想实现非正常执行流的跳转，就需要进程在某一时刻的上下文。只要有进程上下文，将其装填到寄存器中，就能够实现跳转。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int setjmp(jmp_buf env);</span><br><span class="line">void longjmp(jmp_buf env, int val);</span><br></pre></td></tr></table></figure></p>
+<h2 id="longjmp的原理"><a href="#longjmp的原理" class="headerlink" title="longjmp的原理"></a>longjmp的原理</h2><p>和进程切换、信号中断返回的思想类似，要想实现非正常执行流的跳转，就需要进程在某一时刻的上下文。只要有进程上下文，将其装填到寄存器中，就能够实现跳转。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setjmp</span><span class="params">(jmp_buf env)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">longjmp</span><span class="params">(jmp_buf env, <span class="keyword">int</span> val)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <ul>
 <li>setjmp使用jmp_buf结构体保存调用时刻的进程上下文，此结构变量需保证在longjmp时时存在的。</li>
 <li>setjmp返回0时，为直接返回结果；返回非0值，为longjmp恢复栈空间返回的结果。</li>
@@ -440,7 +438,7 @@
 <li>没有被声明为volatile变量</li>
 </ul>
 <p><strong>C++析构函数</strong></p>
-<p>调用longjmp之后，没有正常解栈，本该调用的析构函数没有调用。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void func()</span><br><span class="line">&#123;</span><br><span class="line">    Test test;</span><br><span class="line">    longjmp(g_stack_env);</span><br><span class="line">&#125;</span><br><span class="line">/*</span><br><span class="line">    对象test的析构函数没有调用。</span><br><span class="line">*/</span><br></pre></td></tr></table></figure></p>
+<p>调用longjmp之后，没有正常解栈，本该调用的析构函数没有调用。如：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test test;</span><br><span class="line">    longjmp(g_stack_env);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">    对象test的析构函数没有调用。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -639,7 +637,8 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -649,6 +648,11 @@
 </div>
 
 
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i><span id="busuanzi_container_site_pv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span>
+  </span>
+  </div>
   <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
 
 
