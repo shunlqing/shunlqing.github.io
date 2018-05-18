@@ -7,7 +7,7 @@ categories:
     - 技术笔记
 ---
 # 引子程序
-```c
+```cpp
 // file.cc
 inline void foo(void)
 {
@@ -32,7 +32,7 @@ int main()
 我们知道,c/c++程序编译分为几个阶段,预处理->编译+汇编->链接.**inline的处理阶段发生在编译阶段.**也就是说,在编译阶段完成后,目标模块的inline函数要么被替换了,要么没有被替换,但是链接时可以找到inline函数的定义.也就是说,在编译阶段之前,目标模块需要看到inline函数的实现.
 
 拿引子程序来说,编译main.o目标模块时,编译器"看到"了foo的声明,此时它并不知道foo是要inline的.编译file.o目标模块时,编译器看到foo的实现,并且声明为inline,由于foo在file.o没有被使用到,所以,inline函数不被保留.链接的时候,当然也就找不到foo的定义实体了.针对此例子,我们可以在file.c定义一处函数,使用了一次foo(),编译就可以通过.
-```c
+```cpp
 //file.cc
 int foo2()
 {
@@ -52,7 +52,7 @@ int foo2()
 # 内联函数的使用
 ## inline函数的编程风格
 关键字inline必须与函数定义放在一起才能使函数真正内联,仅把inlilne放在函数声明的前面不起任何作用.
-```c
+```cpp
 //Foo不能内联
 inline void Foo(int x, int y);
 void Foo(int x, int y)
