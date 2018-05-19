@@ -75,7 +75,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Linux,内核," />
 
 
 
@@ -86,13 +86,18 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Shunlqing&#39;s Blog">
-<meta property="og:url" content="http://yoursite.com/archives/2017/index.html">
+<meta name="description" content="本文内容关注一种内核工作的基本机制——中断和异常。标题称这种机制为内核的动力，或许不那么恰当，主要想强调中断和异常对内核工作的重要性。对于操作系统上层的应用程序开发者而言，或许感觉离中断和异常的机制很远，因为我们不需要开发内核。但是毕竟我们使用的是内核所提供的各种服务，理解内核的基本运作原理能够帮助我们更好地写程序、优化程序。 问在前面：  通常所说的“陷入内核”，是怎么个陷入法呢？ 我们的网卡收">
+<meta name="keywords" content="Linux,内核">
+<meta property="og:type" content="article">
+<meta property="og:title" content="中断和异常——内核的动力">
+<meta property="og:url" content="http://yoursite.com/2018/03/01/2018-3-1InterruptAndException/index.html">
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
+<meta property="og:description" content="本文内容关注一种内核工作的基本机制——中断和异常。标题称这种机制为内核的动力，或许不那么恰当，主要想强调中断和异常对内核工作的重要性。对于操作系统上层的应用程序开发者而言，或许感觉离中断和异常的机制很远，因为我们不需要开发内核。但是毕竟我们使用的是内核所提供的各种服务，理解内核的基本运作原理能够帮助我们更好地写程序、优化程序。 问在前面：  通常所说的“陷入内核”，是怎么个陷入法呢？ 我们的网卡收">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-05-19T15:55:49.819Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Shunlqing&#39;s Blog">
+<meta name="twitter:title" content="中断和异常——内核的动力">
+<meta name="twitter:description" content="本文内容关注一种内核工作的基本机制——中断和异常。标题称这种机制为内核的动力，或许不那么恰当，主要想强调中断和异常对内核工作的重要性。对于操作系统上层的应用程序开发者而言，或许感觉离中断和异常的机制很远，因为我们不需要开发内核。但是毕竟我们使用的是内核所提供的各种服务，理解内核的基本运作原理能够帮助我们更好地写程序、优化程序。 问在前面：  通常所说的“陷入内核”，是怎么个陷入法呢？ 我们的网卡收">
 
 
 
@@ -122,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/archives/2017/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/03/01/2018-3-1InterruptAndException/"/>
 
 
 
 
 
-  <title>归档 | Shunlqing's Blog</title>
+  <title>中断和异常——内核的动力 | Shunlqing's Blog</title>
   
 
 
@@ -147,7 +152,7 @@
     
   
 
-  <div class="container sidebar-position-left page-archive">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -275,111 +280,212 @@
           <div id="content" class="content">
             
 
+  <div id="posts" class="posts-expand">
+    
+
+  
+
   
   
   
-  <div class="post-block archive">
-    <div id="posts" class="posts-collapse">
-      <span class="archive-move-on"></span>
-
-      <span class="archive-page-counter">
-        
-        
-        
-          
-        
-        嗯..! 目前共计 15 篇日志。 继续努力。
-      </span>
-
-      
-
-        
-        
-        
-
-        
-          
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2017">2017</h1>
-          </div>
-        
-        
-
-        
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/01/2018-3-1InterruptAndException/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/shunlqing.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2017/12/05/static/" itemprop="url">
-              
-                <span itemprop="name">static关键字</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">中断和异常——内核的动力</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-12-05T00:00:00+08:00"
-              content="2017-12-05" >
-          12-05
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-01T00:00:00+08:00">
+                2018-03-01
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
 
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/操作系统/" itemprop="url" rel="index">
+                    <span itemprop="name">操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2017/12/01/UDP_socket/" itemprop="url">
-              
-                <span itemprop="name">基本UDP编程</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-12-01T00:00:00+08:00"
-              content="2017-12-01" >
-          12-01
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
 
+      
+        <p>本文内容关注一种内核工作的基本机制——中断和异常。标题称这种机制为内核的动力，或许不那么恰当，主要想强调中断和异常对内核工作的重要性。对于操作系统上层的应用程序开发者而言，或许感觉离中断和异常的机制很远，因为我们不需要开发内核。但是毕竟我们使用的是内核所提供的各种服务，理解内核的基本运作原理能够帮助我们更好地写程序、优化程序。</p>
+<p>问在前面：</p>
+<ul>
+<li>通常所说的“陷入内核”，是怎么个陷入法呢？</li>
+<li>我们的网卡收到数据，内核怎么知道该去处理数据了呢？时刻去轮询一下，恐怕不太现实？</li>
+<li>我们访问了一个非法的内存地址，或者执行了一个除0操作。毫无悬念，内核崩溃。那么内核是怎么知道进程崩溃了，该来收拾这个烂摊子了？</li>
+</ul>
+<h1 id="直观来看，内核是什么？"><a href="#直观来看，内核是什么？" class="headerlink" title="直观来看，内核是什么？"></a>直观来看，内核是什么？</h1><p>内核地址空间和进程的地址空间相互独立？</p>
+<p>我们都知道，Linux内核与进程的地址空间相互独立。这是什么意思？直观的比喻就是，每个进程在自己的内存区域工作，内核也在自己的区域工作，它们之间互相都是不可见的。（这点由<strong>虚拟内存管理机制</strong>保证）。在同一个地址空间内部，我们可以简单的使用<strong>函数调用</strong>（或者说过程调用）来使用别的函数提供的功能。比如，你自己写的程序，函数funcA调用funcB。又比如，在Linux内核内部，函数可以直接调用。但是在两个地址空间之间，交互就没那么容易了。比如，如果进程想要使用内核提供的服务（文件读写，网络通信等等），怎么做呢？答案是，系统调用（陷入内核）。</p>
+<p>系统调用怎么实现呢？</p>
+<p>系统调用的目的就是进程能够使用内核的服务。但是具体是怎么向内核发起调用（请求）的呢。答案是中断。我们知道，CPU不断的取指令，执行指令。我们跟CPU约定好，如果遇到一种指令，叫“软中断指令”，CPU就保存当前进程的上下文，改变CPU的模式，然后跳转到内核的中断向量表，获取“软中断处理程序”的地址，然后执行。这就算陷入内核了。</p>
+<p>内核是由<strong>中断驱动</strong>的一个程序实体</p>
+<p>内核由各种各样的服务组件组成，各种系统调用、文件系统、网络系统、调度子系统等等。各种各样的内核活动的产生并不是凭空的，都是需要某种方式驱动，这就是中断。调度：定时器按一个时间片的周期触发一个中断，内核由此触发一次调度过程。系统调用：进程触发一个软中断，内核由此执行一个具体的系统服务。设备驱动:网卡收到数据，触发一次中断，内核由此执行一次对网卡的读操作。等等。</p>
+<h1 id="中断和异常"><a href="#中断和异常" class="headerlink" title="中断和异常"></a>中断和异常</h1><p>本质上，中断和异常属于同一个范畴。</p>
+<p>我们知道，CPU的工作就是不断的取指令，执行指令。每执行一次指令，或者在执行指令期间会发生三种情况：</p>
+<ul>
+<li><ol>
+<li>指令按预想的结果执行，然后取下一条指令，继续执行。</li>
+</ol>
+</li>
+<li><ol>
+<li>这是一条特殊指令，预示一种异常的流向。比如除0操作，越界访问，缺页异常或者系统调用的软中断指令。</li>
+</ol>
+</li>
+<li><ol>
+<li>执行期间，外部设备触发了一个中断，而CPU不得不响应这个中断，转去执行中断服务程序。这是另一种类型的异常流向。</li>
+</ol>
+</li>
+</ul>
+<p>对于第2种情况，我们称之为异常。就是CPU执行指令过程中出现的异常情况。因为它是CPU执行完一条指令<strong>之后</strong>触发的，所以也称为“同步中断”。对于第3种情况，称为“中断”，CPU随时都有可能收到外部设备的中断，具有随机性，也称之为“异步中断”。</p>
+<p>不管是中断还是异常，它们的处理程序都是内核来执行的。</p>
+<h1 id="中断上下文与进程上下文"><a href="#中断上下文与进程上下文" class="headerlink" title="中断上下文与进程上下文"></a>中断上下文与进程上下文</h1><p>首先谈进程上下文：</p>
+<p>示例：</p>
+<pre><code>同样是一次read调用，进程A和进程B得到效果是不一样的，进程A读取文件a，获取到x个字节；进程B读取文件b，获取到y个字节。而内核肯定只有一个read调用。
+内核如何做到区别对待？
+</code></pre><p>只告诉内核执行什么系统调用是不够的，内核必须知道，为哪个进程服务，读取哪个文件，预期读取多少个字节，要拷贝用户缓冲的目的地址等等。简言之，内核需要一个执行环境，这个环境就是所谓的“进程上下文”。即，当一个进程正在进行时，CPU所有寄存器中的值、进程的状态以及堆栈中的内容称之为进程的上下文。所以，进程执行系统调用，“内核代表进程执行，在进程上下文”。</p>
+<p>再来就是中断上下文，和进程上下文是一个道理，当硬件触发中断的时候，内核需要获取到当前该硬件的各种变量和参数，内核根据这些参数来执行中断服务程序。而硬件传过来的各种参数和内核需要保存的一些环境（被中断的进程环境），可以看作是<strong>中断上下文</strong>。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>总的来说，内核就是一堆处理过程合成的实体。它基本没有主动性，靠的是各种中断来驱动的。进程有需求了，触发中断告诉它；程序执行出错了，触发中断告诉它；设备状态变化了，还是触发中断告诉它；时间片到期，该调度了，触发中断告诉它。</p>
+
+      
     </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"><i class="fa fa-tag"></i> Linux</a>
+          
+            <a href="/tags/内核/" rel="tag"><i class="fa fa-tag"></i> 内核</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/12/学习之道/" rel="next" title="重新训练自己的大脑">
+                <i class="fa fa-chevron-left"></i> 重新训练自己的大脑
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/17/2018-3-6rvalue/" rel="prev" title="C++11——理解右值">
+                C++11——理解右值 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
 
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -387,6 +493,8 @@
 
 
           
+  
+
 
         </div>
         
@@ -407,8 +515,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -482,6 +599,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#直观来看，内核是什么？"><span class="nav-number">1.</span> <span class="nav-text">直观来看，内核是什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#中断和异常"><span class="nav-number">2.</span> <span class="nav-text">中断和异常</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#中断上下文与进程上下文"><span class="nav-number">3.</span> <span class="nav-text">中断上下文与进程上下文</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -603,6 +736,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
 
   
 
