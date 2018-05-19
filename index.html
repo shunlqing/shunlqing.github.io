@@ -290,7 +290,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/18/学习之道/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/19/2018_5_19LinuxKernel_WaitQueue/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
@@ -309,7 +309,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/05/18/学习之道/" itemprop="url">重新训练自己的大脑</a></h1>
+                <a class="post-title-link" href="/2018/05/19/2018_5_19LinuxKernel_WaitQueue/" itemprop="url">Linux内核——等待队列浅谈</a></h1>
         
 
         <div class="post-meta">
@@ -321,8 +321,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
-                2018-05-18
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-19T00:00:00+08:00">
+                2018-05-19
               </time>
             
 
@@ -344,8 +344,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/效率/" itemprop="url" rel="index">
-                    <span itemprop="name">效率</span>
+                  <a href="/categories/操作系统/" itemprop="url" rel="index">
+                    <span itemprop="name">操作系统</span>
                   </a>
                 </span>
 
@@ -383,394 +383,32 @@
       
         
           
-            <p>阅读《学习之道》，重新训练自己的大脑。</p>
-<h2 id="What"><a href="#What" class="headerlink" title="What"></a>What</h2><ul>
-<li>专注思维和发散思维</li>
-<li>工作记忆和长期记忆</li>
-<li>回想和提取练习</li>
-<li>组块构建和避免能力错觉</li>
-</ul>
-<h3 id="专注思维和发散思维"><a href="#专注思维和发散思维" class="headerlink" title="专注思维和发散思维"></a>专注思维和发散思维</h3><p>大脑存在两种思维模式交替运作：专注模式和发散模式。专注模式擅长在经验、旧有的神经连接中寻找解决方法；发散模式（无意识思考）则是在不经意间触发灵感。</p>
-<p>沉于专注模式太久，会陷入思维困境无法自拔；没有专注一段时间便进入发散模式，往往陷入“认知错觉”（总感觉自己在学习，但实际上没有）。</p>
-<p>学习新概念新知识块，首先需要快速浏览总体把握，并且尽可能描述清楚发现的问题。之后带着清晰的问题进入深度阅读，在深度阅读的过程中，不断明确问题，并尝试求解。在一段时间（1小时），问题仍旧不能解决，此时要转移注意力，有意识地切换成发散模式（散步，听音乐）。反复之。</p>
-<p>专注模式下，问题必须清晰。</p>
-<h3 id="工作记忆和长期记忆"><a href="#工作记忆和长期记忆" class="headerlink" title="工作记忆和长期记忆"></a>工作记忆和长期记忆</h3><p>两种记忆系统：工作记忆和长期记忆</p>
-<p>工作记忆是瞬时记忆，要想让工作记忆转存到长期记忆，需要时间也需要能量。也就是说，需要有时间表适时地不断排演重复，对其施加能量，才能触发生成长期的神经连接。一开始，最好24小时内回顾一次。之后每天重复一次，再后来，每周甚至几周重复一次。</p>
-<p>这就意味着，需要有跟踪学习项目的记录。</p>
-<h3 id="回想，提取练习"><a href="#回想，提取练习" class="headerlink" title="回想，提取练习"></a>回想，提取练习</h3><p>回想（提取练习）是比一遍遍阅读材料更有效的，但是常常被忽略。</p>
-<p>学习时，自我测验和做提取练习时最有效果的。</p>
-<p>初次学到、还颇有挑战性的知识，最好是24小时内亲近一下。然后几天，一周，几周，几个月。</p>
-<p>要想考出好成绩或在此基础上创造性思考，你就必须让它们牢牢地钉在记忆里。</p>
-<h3 id="组块构建和避免能力错觉"><a href="#组块构建和避免能力错觉" class="headerlink" title="组块构建和避免能力错觉"></a>组块构建和避免能力错觉</h3><p>要熟练的掌握知识，就要创造一些概念组块——通过<strong>赋予意义</strong>将分散的<strong>信息碎片</strong>组合起来的过程。</p>
-<p><strong>构成组块的基本步骤</strong></p>
+            <p>本文关注内容：Linux内核的一种数据结构：等待队列。在这里，我们不太去关注等待队列细节的实现。主要从功能角度谈下等待队列在内核中的角色。<br>我的观点是，不管是内核，还是内核中的某个组件，理解其角色定位很重要，单纯是从实现细节上去理解某种机制，或许少了点乐趣。</p>
+<h1 id="你理解阻塞吗？"><a href="#你理解阻塞吗？" class="headerlink" title="你理解阻塞吗？"></a>你理解阻塞吗？</h1><p>写程序的时候，我们常常说某个系统调用是阻塞调用。从用户层的角度，基本理解是：进程在执行某个系统调用的时候，因为需要的资源不满足（IO操作，加锁等等），导致进程“停”在那里。等到资源就绪了或者设置的timeout时间超时了，进程得以继续执行。</p>
+<p>从内核的角度，面对用户层对阻塞调用的需求，需要实现哪些机制呢？</p>
 <ul>
-<li>注意力集中在原始信息本身的意义上</li>
-<li>理解信息形成组块的接口，即它对外界的意义</li>
-<li>获取背景信息，反复推敲组块和外界的连接，即其存在的意义和何时何地使用它们</li>
-</ul>
-<p>搭建组块资料库的过程，也是训练大脑的过程。</p>
-<p>仅仅看一遍问题答案，就以为自己会了，这就是能力错觉。从笔记里挑一个概念，看看自己能回忆起多少内容，同时试着理解所回忆的内容。此时，回想会发挥很大作用。</p>
-<h2 id="How"><a href="#How" class="headerlink" title="How"></a>How</h2><ul>
-<li>Questions List</li>
-<li>ToDo List</li>
-<li>组块构建跟踪——笔记或Blog</li>
-<li>番茄时间(专注模式)</li>
-</ul>
-<h3 id="Q-List"><a href="#Q-List" class="headerlink" title="Q List"></a>Q List</h3><p>每开始一次新知识的学习，准备问题列表。在专注模式在，不断清晰、明确、深刻对问题本身和答案的理解。</p>
-<h3 id="组块构建跟踪"><a href="#组块构建跟踪" class="headerlink" title="组块构建跟踪"></a>组块构建跟踪</h3><p>笔记本专门一白页（简要）、组块构建是Blog或笔记的形式</p>
-<p>根据组块构建的步骤，一开始不应是总结式的。</p>
-<ul>
-<li>按大类别，将碎片化的知识小块，逐个理解（其本身，接口，与外界联系）</li>
-<li>心中已开始有全貌的认识，便开始整理、组块</li>
-<li>在尚未基本固定下来整个知识架构之前，按一定的时间周期，不断回想提取、理解。</li>
-</ul>
-<h3 id="ToDo-List"><a href="#ToDo-List" class="headerlink" title="ToDo List"></a>ToDo List</h3><p>每天睡觉前，写下明天要做的重要的事项。</p>
-<p>避免拖延。</p>
-<h2 id="心态"><a href="#心态" class="headerlink" title="心态"></a>心态</h2><ul>
-<li>战胜恐惧，别怕落在别人后面</li>
-<li>拖延——令你没有足够时间处于专注模式，走马观花</li>
-<li>好好睡觉</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/18/static/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="shunlqing">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Shunlqing's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/18/static/" itemprop="url">static关键字</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
-                2018-05-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/编程语言/" itemprop="url" rel="index">
-                    <span itemprop="name">编程语言</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="何时使用static"><a href="#何时使用static" class="headerlink" title="何时使用static"></a>何时使用static</h1><ul>
-<li>请况一:当我们定义一个函数,该函数仅限于在定义它的源文件下使用,此时可以使用”static”修饰,以对外界隐藏该函数.</li>
-<li>情况二:同样,定义一个全局变量,该变量仅在定义它的源文件下使用,此时可以使用”static”修饰,达到隐藏的目的.</li>
-<li>情况三:对于一个局部变量,如果我们有意不让其存储在栈(自动变量)上,而是存储在静态存储区(.data,.bss),可以使用static修饰.<br>前两种情况都是限定符号的作用域,第三种情况属于改变变量的生命周期.</li>
-</ul>
-<h1 id="static的作用如何实现的"><a href="#static的作用如何实现的" class="headerlink" title="static的作用如何实现的"></a>static的作用如何实现的</h1><p>首先清楚c/c++的分离式编译,每个.c文件都首先经过编译成目标文件(.o文件),再经过链接形成可执行文件。</p>
-<p><strong>static</strong>修改链接属性</p>
-<p>使用static修饰全局变量或者函数，其实修饰的都是符号。对编译其来说，以static修饰的符号，其属性的本地属性，即在链接的时候，不会被链接器处理。这样就达到了向外界（其他目标文件）隐藏的目的。</p>
-<p>static局部变量（静态局部变量）</p>
-<p>静态局部变量仅仅是编译器在编译的时候，在程序的静态存储区（.bss,.data）为该变量预留空间。未初始化的静态局部变量存储在.bss段，已初始化的静态局部变量存储在.data。其生命周期就从初始化时刻到程序结束。栈上变量（自动变量）的生命周期只局限函数内部。</p>
-<h1 id="static和extern"><a href="#static和extern" class="headerlink" title="static和extern"></a>static和extern</h1><p>extern并不能改变static的作用效果。</p>
-<p>extern关键字的作用仅仅是告诉编译器，该符号的定义在外部。</p>
-<ul>
-<li>对于全局变量来说，extern的作用是告诉编译器，该符号在其他源文件里面。</li>
-<li>对于函数来说，extern的作用和#include “*.h”的作用是相似的，相当于声明。在两个目标模块的联系仅仅是几个函数，就可以使用这种方法，而不需要include包含整个头文件。</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/18/rvalue/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="shunlqing">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Shunlqing's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/18/rvalue/" itemprop="url">理解右值</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
-                2018-05-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>本文关注内容：右值和右值引用，以及移动语义、完美转发。</p>
-<h1 id="发现身边的右值"><a href="#发现身边的右值" class="headerlink" title="发现身边的右值"></a>发现身边的右值</h1><p>学习右值之所以会觉得很晦涩难懂，是因为我们完全习惯使用了左值。就像突然哪天告诉你，有“暗物质”的存在，你的“常识世界”是一下子不能接受的。</p>
-<p>变量（或者说对象）可以看作是内存中的一小段。程序不断运行达到某种功能都是对若干个位于内存的对象，不断加工、修改的，各个对象又相互联系的结果。</p>
-<p>在编程过程中，我们会定义各种变量：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ObjectA</span> &#123;</span></span><br><span class="line">    ObejctA() &#123;&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">ObjectA <span class="title">a</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p>这些定义操作，编译器会这样做：</p>
-<ul>
-<li>1.分配一段内存，命名为i，内存大小按照int类型标准分配，然后这段内存初始化为0；</li>
-<li>2.分配一段内存，命名为a，内存大小按照ObjectA类型标准分配，然后这段内存根据默认构造函数初始化。<br>这样，在程序的其他地方，我们可以使用变量名i或者a，来达到修改它们所代表的内存的目的。比如：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<li>1.首先，进程陷入内核，内核发现进程所要求的资源暂时无法满足，需要将其设置为睡眠状态，然后调度其他进程执行。这里引出一个问题：（1）内核如何将一个进程睡眠？</li>
+<li>2.再来，等待资源就绪时，我们需要唤醒等待在该资源上面的进程。这里存在两个问题：（2）内核是怎么知道资源就绪的？以及，（3）某个资源就绪了，内核怎么找到对应等待的进程的？<!-- 3.超时的实现 -->
 </li>
 </ul>
-<p>这就是左值。它们是可以取地址的。它们会有个名字，就像门牌号。程序员可以明确地说：我就要使用某某地址上的那个变量i，我要把它改成1。</p>
-<p>那么，内存世界里，除了程序员明确定义的变量占据内存，是否还存在其他构建了的内存对象？答案是有的。在程序编译期间和运行期间，会在内存构造很多没有名字的对象（匿名对象），它们有的为了计算，有的为了支持上层的语言特性。看以下几种情景：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> i = GetValue();</span><br></pre></td></tr></table></figure></p>
-<p>运行过程：程序通过GetValue()计算得出一个“结果”，然后将这个结果拷贝到i所命名的内存位置。我们考察这个“结果”（临时值），它同样需要一个和i一样的内存，只是在拷贝给i之后，这段内存就销毁了。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ObjectA</span>&#123;</span></span><br><span class="line">    ObjectA()&#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Constructor"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ObjectA(<span class="keyword">const</span> ObjectA&amp; ) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Copy constructor"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~ObjectA() &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Destructor"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ObjectA a = ObjectA();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>使用-fno-elide-constructors来取消返回值优化，以便观察临时值的产生。运行结果：</p>
-<pre><code>Constructor
-Copy constructor
-Destructor
-Destructor
-</code></pre><p>可以看出，这里构造了一个临时对象，然后拷贝给a之后，临时对象就销毁了。</p>
-<p>此外，lambda表达式也属于右值，它们在内存中也会以某种对象的形式存在，但是你无法知悉它们的存储位置（获取地址）。</p>
-<h1 id="知道右值的存在，我们如何使用右值？"><a href="#知道右值的存在，我们如何使用右值？" class="headerlink" title="知道右值的存在，我们如何使用右值？"></a>知道右值的存在，我们如何使用右值？</h1><pre><code>答案：右值引用。
-</code></pre><p>和左值引用一样，<strong>右值引用允许你直接引用匿名对象的那段内存，虽然你无法知悉它的地址，但不影响你使用</strong>。编译器使用&amp;&amp;符号表示右值引用。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ObjectA &amp;&amp;a = ObjectA(); <span class="comment">//语义：直接把临时构造的对象返回给a，a作为这个临时对象的引用供程序员使用。</span></span><br></pre></td></tr></table></figure></p>
-<p>这里运行结果：</p>
-<pre><code>Constructor
-Destructor
-</code></pre><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> f = []()&#123; <span class="keyword">return</span> <span class="number">1</span>; &#125;; <span class="comment">//lambda表达式（匿名表达式）可以使用一个右值引用去“承接”它。</span></span><br><span class="line">f(); <span class="comment">//然后就可以使用这个右值引用，在其他地方调用这个lambda表达式</span></span><br></pre></td></tr></table></figure>
-<p>这里要区分好右值和右值引用。右值是一种对象的概念，而右值引用和左值引用一样，是引用。</p>
-<h1 id="使用右值，好处多多"><a href="#使用右值，好处多多" class="headerlink" title="使用右值，好处多多"></a>使用右值，好处多多</h1><p>通过前面的描述我们可以看到，很多时候，匿名对象（临时对象）的构造是不为人所知的。很多情况下，匿名对象的生命周期很短。它们被构造，然后在短时间内又被销毁。如果构造对象涉及开销比较大的操作，比如malloc。</p>
-<p>我们来看一个配备移动构造函数的类对象的例子。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//没有移动构造函数</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ObjectA</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ObjectA() : m_ptr(<span class="keyword">new</span> <span class="keyword">char</span>[<span class="number">1</span>]) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Constructor"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ObjectA(<span class="keyword">const</span> ObjectA&amp; a) : m_ptr(<span class="keyword">new</span> <span class="keyword">char</span>[*a.m_ptr]) <span class="comment">//深拷贝</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Copy Constructor"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~ObjectA() &#123;</span><br><span class="line">        <span class="keyword">delete</span>[] m_ptr;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Destructor"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">char</span>* m_ptr;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ObjectA a = ObjectA(); <span class="comment">//产生临时对象，该条语句运行完，临时对象销毁</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<pre><code>Constructor
-Copy Constructor
-Destructor
-Destructor
-</code></pre><p>临时对象分配了动态内存，然后短时间内又析构释放。为了定义一个对象，总共发生了两次的new操作。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//配备移动构造函数</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ObjectA</span> &#123;</span></span><br><span class="line">    <span class="comment">// ....</span></span><br><span class="line"></span><br><span class="line">    ObjectA(<span class="keyword">const</span> ObjectA&amp; a) : m_ptr(<span class="keyword">new</span> <span class="keyword">char</span>[*a.m_ptr])</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Copy Constructor"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//移动构造函数</span></span><br><span class="line">    ObjectA(ObjectA &amp;&amp; a) : m_ptr(a.m_ptr) &#123; <span class="comment">//</span></span><br><span class="line">        a.m_ptr = <span class="literal">nullptr</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Move Constructor"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<pre><code>Constructor
-Move Constructor
-Destructor
-Destructor
-</code></pre><p>只发生一次new操作。我们将临时对象new的动态内存直接转移给了返回的对象。节省开销。</p>
-<p>程序员明确知道，会产生临时变量，而且这个临时变量会在短时间内析构。那么何不将其捕捉，直接利用呢？移动构造函数就是利用这一点。</p>
-<h1 id="左值也可转化为右值——std-move"><a href="#左值也可转化为右值——std-move" class="headerlink" title="左值也可转化为右值——std::move()"></a>左值也可转化为右值——std::move()</h1><p>左值是一种对象的概念，右值也是一种对象的概念。说白了，就是内存嘛。那么，一个左值可以用右值的方式看待，从而使用到右值的一些便利呢。答案是可以。</p>
-<p>比如，我明确清楚某个对象我不会再使用了，但是里面的资源释放掉蛮可惜的，我希望新的对象或者其他对象直接来承接这些资源。<strong>std::move()</strong>模板函数提供了这样的功能。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ObjectA a = ObjectA();</span><br><span class="line">    </span><br><span class="line">    ObjectA b(std::move(a)); //我们明确不会再使用a,就可以将其所只有的资源转移给新的对象。（具体转移操作由移动拷贝构造完成）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>运行结果：<br>    Constructor<br>    Move Constructor<br>    Destructor<br>    move …<br>    Move Constructor<br>    Destructor<br>    Destructor</p>
-<p>类似具有<strong>转移语义</strong>的函数还有移动赋值语句<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ObjectA&amp; <span class="keyword">operator</span>=(ObjectA&amp;&amp; a) &#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"operator= &amp;&amp;"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    m_ptr = a.m_ptr;</span><br><span class="line">    a.m_ptr = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h1 id="完美转发-–std-forward模板"><a href="#完美转发-–std-forward模板" class="headerlink" title="完美转发 –std::forward模板"></a>完美转发 –std::forward模板</h1><p>基本：一个&amp;&amp;的形参可以匹配左值，也可以匹配右值。&amp;&amp;称为universal reference。</p>
-<p>需求：函数模板中，需要将参数转发给函数函数模板中调用的另一个函数。传入右值类型，转发的也要保留右值类型，传入左值类型，转发也要保留左值类型。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">process</span><span class="params">(<span class="keyword">int</span>&amp; i)</span> </span>&#123; <span class="built_in">cout</span> &lt;&lt; <span class="string">"lvalue call, i = "</span> &lt;&lt; i &lt;&lt; <span class="built_in">endl</span>; &#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">process</span><span class="params">(<span class="keyword">int</span>&amp;&amp; i)</span> </span>&#123; <span class="built_in">cout</span> &lt;&lt; <span class="string">"rvalue call, i = "</span> &lt;&lt; i &lt;&lt; <span class="built_in">endl</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">(T&amp;&amp; t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    process(t); <span class="comment">// t是右值引用，但t本身是左值，所以匹配到的是process(int&amp; i)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a = <span class="number">2</span>;</span><br><span class="line">    func(a); </span><br><span class="line"></span><br><span class="line">    func(<span class="number">10</span>); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>运行结果：</p>
-<pre><code>lvalue call, i = 2
-lvalue call, i = 10
-</code></pre><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">(T&amp;&amp; t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    process(<span class="built_in">std</span>::forward&lt;T&gt;(t)); <span class="comment">// t是右值引用，但t本身是左值，所以匹配到的是process(int&amp; i)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>运行结果：</p>
-<pre><code>lvalue call, i = 2
-rvalue call, i = 10
-</code></pre><p><strong>使用完美转发和移动语义来实现一个泛型的工厂函数</strong>，这个工厂函数可以创建所有类型的对象<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</span><br><span class="line"><span class="function">T* <span class="title">Instance</span><span class="params">(Args... args)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> T(<span class="built_in">std</span>::forward&lt;Args&gt;(args)...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>[TODO]</p>
-<ul>
-<li>std::move的实现</li>
-<li>std::forward的实现</li>
-</ul>
+<p>示例：</p>
+<pre><code>我们希望对某个socket fd进行阻塞write操作。发起写操作的时候，陷入内核，内核发现该socket fd的写缓冲区是满的，暂时不能写。这时，内核将进程设置为睡眠。
+调用其他进程执行。等到该写缓冲区可以写的时候，内核将进程设置为执行状态，然后执行写操作，拷贝数据到内核写缓冲区。执行完，切换回用户态。
+</code></pre><p><strong>问题一：内核如何将一个进程睡眠</strong></p>
+<p>进程的task_struct结构有一个状态成员。将其设置为“睡眠”，并将task_struct结构从就绪队列中移走，内核就不会调度其执行，也就相当于睡眠。</p>
+<p><strong>问题二：内核怎么知道资源就绪的</strong></p>
+<p>中断。<strong>内核的所有的工作都是由中断驱动的。</strong>不管是系统调用陷入内核，还是调度，还是其他的内核活动，都是由各种各样的中断来触发执行的。对于设备IO，如果设备空闲了，会触发一个外部中断，该中断触发内核执行处理程序，通知等待进程、执行回调等等。</p>
+<p><strong>问题三：资源就绪了，内核怎么找到对应等待的进程</strong></p>
+<p>答案是等待队列。我们将一个资源和一个等待队列关联起来。如果进程所请求的资源还未就绪，就先加入到该资源的等待队列中。等到资源就绪了，就唤醒等待队列中的进程，加入到调度。</p>
+<h1 id="何为等待队列"><a href="#何为等待队列" class="headerlink" title="何为等待队列"></a>何为等待队列</h1><p>等待队列就是一个普通的双向链表，该链表的每个节点都代表一个进程task_struct的封装。每个资源都会有相应的等待队列。<br><!-- 等待队列的代码描述 --></p>
+<h1 id="等待队列与“惊群”"><a href="#等待队列与“惊群”" class="headerlink" title="等待队列与“惊群”"></a>等待队列与“惊群”</h1><p>“惊群”的基本行为是：有多个进程或者线程等待在同一个资源上，而且该资源一次只能有一个进程处理，比如文件描述符的写操作，accept一个新连接等。那么在资源就绪的时候。如果内核采取的策略是唤醒所有的进程。这样，只有一个进程获取了该资源，其他进程发现没有资源就绪，继续进入睡眠（所谓虚假唤醒）。这样的行为浪费了系统的CPU资源。</p>
+<p>那是不是，内核在资源就绪的时候，就唤醒一个进程不就得了。其实也不是，因为不是所有资源都是互斥的。比如，某个文件的读操作。</p>
+<p>那么，惊群问题怎么解决？</p>
+<p>在用户态，可以有不同的解决方式。或者忽略惊群所带来的开销，或者使用锁方式保证一次只有一个进程来阻塞在一个资源上。而对于内核来说，在等待队列上增加了一个是否“互斥等待”的标志。</p>
+<p>如果是互斥等待的，一次唤醒一个进程。如果不是互斥等待的，一次唤醒所有进程。</p>
+<p>互斥等待的经典例子：accept。因为我们很明确知道，对一个listen fd的accept,肯定是一次只有一个进程可以处理。那么，我们在listen fd上的等待队列，就毫无疑问可以设置为“互斥等待”。所以，现今版本的linux内核，解决了accept的惊群问题。</p>
+<p>但是像epoll_wait的惊群问题，就无法从等待队列的互斥等待来解决。首先，epoll fd上也有一个等待队列，代表epoll fd所监听的其他若干文件描述符（资源）就绪时，唤醒等待队列上的资源。因为我们无法确定，这些资源是不是都是互斥访问的，还是都不是。所以，只好唤醒所有进程。更多的惊群问题，可以查阅相关资料。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>等待队列是内核实现进程阻塞调用的机制。我们从概念上，浅谈了等待队列的用途，以及等待队列会出现的惊群问题。有说得不清楚的地方，还请见谅。</p>
 
           
         
@@ -1651,7 +1289,7 @@ rvalue call, i = 10
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/05/18/hello-world/" itemprop="url">Hello World</a></h1>
+                <a class="post-title-link" href="/2018/05/18/hello-world/" itemprop="url">Hexo Start</a></h1>
         
 
         <div class="post-meta">
@@ -1673,28 +1311,6 @@ rvalue call, i = 10
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/工具/" itemprop="url" rel="index">
-                    <span itemprop="name">工具</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1734,195 +1350,6 @@ rvalue call, i = 10
 <p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
 <h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 <p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/18/UDP_socket/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="shunlqing">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Shunlqing's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/18/UDP_socket/" itemprop="url">基本UDP编程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
-                2018-05-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/技术笔记/" itemprop="url" rel="index">
-                    <span itemprop="name">技术笔记</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="UDP-用户数据报协议"><a href="#UDP-用户数据报协议" class="headerlink" title="UDP 用户数据报协议"></a>UDP 用户数据报协议</h1><p>TCP的通信流程好比“打电话”，拨通号码，需要等对方接起电话（建立了通话渠道），才能进行交流。UDP的通信流程就好比“写信件”，写好信，填好对方的地址和名字，就可以寄出去了。如果没有告知对方，对方并不会知道他将会收到你的一封信。可能因为某些原因（信在运输被弄掉了等等），对方收不到你的信，你也不知道对方收到了没有。更糟糕的是，信可能到对方家里了，但是他不在，或者没有从邮箱里拿出你的信。类似信件的通信行为，UDP把用户进程每次传过来的数据不加拆解、完整的打包成udp数据包交给IP协议层。</p>
-<p>UDP协议面向非连接。“非连接”怎么理解？就是说，UDP不管通信对方是否准备好接收消息，甚至不管对方是不是存在。直接把数据打包交给IP层去发送就是了。不像TCP，需要建立起一个连接，才能发送数据。</p>
-<p>UDP协议是不可靠的。适用于一次传输数据量较少的通信。</p>
-<h1 id="UDP头部"><a href="#UDP头部" class="headerlink" title="UDP头部"></a>UDP头部</h1><h1 id="UDP基本通信模型"><a href="#UDP基本通信模型" class="headerlink" title="UDP基本通信模型"></a>UDP基本通信模型</h1><p>请求——应答模式</p>
-<p>&lt;…此处应有图&gt;</p>
-<h1 id="recvfrom和sendto函数"><a href="#recvfrom和sendto函数" class="headerlink" title="recvfrom和sendto函数"></a>recvfrom和sendto函数</h1><p>这两个函数是UDP下的读写函数，类似于标准的read和write函数。可以说，这两个函数就是为UDP而生的。为什么这样说呢？</p>
-<p>因为UDP是不建立连接的数据传输，这里隐含：对于一个udp套接字，它可以一会儿发给a服务器，一会发给b服务器。同样，它可以接受来自不同IP主机的数据包。（只要知道其地址和端口号就行了）。也就是说，<strong>每次发送/接收的行为都是独立的，那么怎么区分数据包呢？</strong>解决方法就是在read/write函数加两个参数：地址结构体及其长度。这也就演变出两个函数：recvfrom和sendto.</p>
-<p>TCP是面向连接的，单向的。recvfrom/sendto没有必要使用在TCP上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;sys/socket.h&gt;</span><br><span class="line">ssize_t recvfrom(int sockfd, void* buff, size_t hbytes, int flags, struct sockaddr* from, socklen_t *addrlen);</span><br><span class="line">ssize_t sendto(int sockfd, const void* buff, size_t nbytes, int flags, struct sockaddr* to, socklen_t addrlen);</span><br></pre></td></tr></table></figure></p>
-<p>针对这两个函数，注意几点：</p>
-<ul>
-<li>recvfrom的地址结构及其长度参数都是指针类型，即“值——结果”参数。sendto的地址结构长度是“值”类型。</li>
-<li>recvfrom返回值为0是允许的，且不像TCP，返回0就代表对端关闭连接。对于UDP来说，写一个长度为0的数据报是允许的。</li>
-<li>recvfrom的地址结构指针是NULL，那么其长度也必须为NULL，表示我们不关心数据发送者的协议地址。</li>
-</ul>
-<h1 id="各种小问题"><a href="#各种小问题" class="headerlink" title="各种小问题"></a>各种小问题</h1><h2 id="数据报丢了。。。"><a href="#数据报丢了。。。" class="headerlink" title="数据报丢了。。。"></a>数据报丢了。。。</h2><p>客户端sendto一个数据报之后，就兴高采烈转入recvfrom中阻塞等待接收。凡是都有万一，万一数据报在路上被路由器丢弃了，或者服务器根本不存在，又或者服务器返回应答了但是应答丢了。。。会出现什么情况：客户端永久阻塞在recvfrom调用。</p>
-<p>一般的解决方法是：给recvfrom调用设置一个超时。</p>
-<h2 id="数据报不请自来——验证响应"><a href="#数据报不请自来——验证响应" class="headerlink" title="数据报不请自来——验证响应"></a>数据报不请自来——验证响应</h2><p>客户端或服务器本来在等待A端的数据包，但是却接收到了非A的数据报。如果应用进程不想与之通信，就需要有机制来忽略或处理这样的情况。</p>
-<p>解决方法：通过recvfrom传回来的地址结构来判断是否是我们想要的响应。</p>
-<h2 id="服务器进程未运行"><a href="#服务器进程未运行" class="headerlink" title="服务器进程未运行"></a>服务器进程未运行</h2><p>客户端在未获知服务器是否启动的情况下，就像服务器发送数据包，会发生这样的情况，即服务器进程还没有启动时，客户端就sendto一个数据包，然后直接转入到recvfrom中，那么什么也不会发生。客户端将永远阻塞在recvfrom。为什么是这样的？</p>
-<p>针对IP协议来说，如果目标进程不可达，服务器端将会返回一个“端口不可达”<strong>ICMP错误</strong>（异步错误）。但是在默认情况（未连接）下，这个错误是不会被发送进程感知到的（原因后解）。</p>
-<p>sendto成功返回仅仅表示在接口输出队列中具有足够的空间存放本次发送形成的IP数据报。也就不能说明对方已经收到数据报。</p>
-<p>一个<strong>基本规则</strong>就是：对于一个UDP套接字，由他引发的异步错误并不返回给套接字本身，除非该UDP套接字已经连接。为什么这样做呢？原因其实很简单，想象一个场景，一个未连接UDP套接字同时发给多个不同的主机，其中有个主机响应了ICMP错误，如果将此异步错误传递给UDP套接字，那么它也判断不了是哪个通信方出现问题。已连接的UDP套接字可以感知到ICMP错误，就是因为它仅仅只有一个对端。</p>
-<p>一言：UDP套接字进程感知不了ICMP错误，除非它是已连接的。</p>
-<h2 id="UDP的connect行为"><a href="#UDP的connect行为" class="headerlink" title="UDP的connect行为"></a>UDP的connect行为</h2><p>与TCP的connect操作有三次握手过程不同，UDP的connect仅仅是检查是否存在立即可知的错误（地址是不是错误的），把套接字的目标地址和目标端口提前填好而已。</p>
-<p>设置好目的IP和目的端口的UDP套接字称为“已连接UDP套接字”。它与未连接UDP套接字有三处不同：</p>
-<ul>
-<li>设置好目的IP和目的端口号，也就不用每次调用sendto和recvfrom这样需要填地址结构的函数了，可以像TCP一样，调用write/send。</li>
-<li>同样的，recvfrom也不必使用，而改用read、recv或recvmsg。</li>
-<li>由已连接UDP套接字引发的异步错误将返回它们所在的进程，而未连接UDP套接字不接受任何异步错误。</li>
-</ul>
-<p>已连接UDP套接字只是确定在当下要通信的对端，是可变的。改变目的IP和目的端口的方法就是再次调用connect。</p>
-<p><strong>已连接和未连接UDP套接字的性能</strong></p>
-<p>在一个未连接的UDP套接字上调用两次sendto函数，内核行为经历6个步骤：</p>
-<ul>
-<li>连接套接字；</li>
-<li>输出第一个数据报；</li>
-<li>断开套接字连接；</li>
-<li>连接套接字；</li>
-<li>输出第二个数据报；</li>
-<li>断开套接字连接；</li>
-</ul>
-<p>在一个已连接的UDP套接字上调用两次sendto函数，内核行为经历6个步骤：</p>
-<ul>
-<li>连接套接字；</li>
-<li>输出第一个数据报；</li>
-<li>输出第二个数据报；</li>
-<li>断开套接字连接；</li>
-</ul>
 
           
         
@@ -2137,6 +1564,508 @@ rvalue call, i = 10
 
 
     
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/18/Linux进程和线程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/shunlqing.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/18/Linux进程和线程/" itemprop="url">Linux进程和线程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
+                2018-05-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/操作系统/" itemprop="url" rel="index">
+                    <span itemprop="name">操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/操作系统/技术笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><ul>
+<li>Linux系统中，进程和线程的区别？</li>
+<li>Linux系统中，进程和线程的效率差别大不大，如何验证？</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/18/C数组名退化为指针/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/shunlqing.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/18/C数组名退化为指针/" itemprop="url">C/C++数组名和指针的关系</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
+                2018-05-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/编程语言/" itemprop="url" rel="index">
+                    <span itemprop="name">编程语言</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/编程语言/技术笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="数组名不是指针！！！"><a href="#数组名不是指针！！！" class="headerlink" title="数组名不是指针！！！"></a>数组名不是指针！！！</h2><ul>
+<li>数组名指代的是数组整个实体结构。</li>
+<li>数组名可以外延成指代实体的指针，而且是一个指针常量。</li>
+<li>指向数组的指针，仅仅是数组第一个元素的地址。</li>
+<li>a[i]内部翻译为*(a+i)</li>
+<li>对数组名取地址，&amp;array+1,其步长是整个数组，与&amp;(array+1),步长是一个数组元素不同</li>
+</ul>
+<h2 id="数组名退化为指针"><a href="#数组名退化为指针" class="headerlink" title="数组名退化为指针"></a>数组名退化为指针</h2><p>在形参为数组的情况下，数组名会退化为指针，在函数内部，实际上是一个指针。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span> <span class="built_in">array</span>[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(<span class="built_in">array</span>) &lt;&lt; <span class="built_in">endl</span>; <span class="comment">//输出为8，为一指针大小，不是数组的大小</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="sizeof是个操作符，不是函数"><a href="#sizeof是个操作符，不是函数" class="headerlink" title="sizeof是个操作符，不是函数"></a>sizeof是个操作符，不是函数</h2><p>sizeof<strong>操作符</strong>：求得是对象或类型的大小，这里的“大小”指的是“所占内存空间的实际大小”。</p>
+<p>数组名代表的是整个数组结构实体，所以求得的是整个数组实体的内存大小。</p>
+<p>指针结构实体本身，表示“一个指针结构”占用的内存大小，64位系统为8字节。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> <span class="built_in">array</span>[<span class="number">10</span>]; </span><br><span class="line"><span class="keyword">sizeof</span>(<span class="built_in">array</span>); <span class="comment">// 4 * 10 = 40字节</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> * p;</span><br><span class="line"><span class="keyword">sizeof</span>(p); <span class="comment">// 8字节</span></span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/18/Advance_IO_Func/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/shunlqing.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/18/Advance_IO_Func/" itemprop="url">高级IO函数</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
+                2018-05-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/技术笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h1><p>讨论几个问题：</p>
+<ul>
+<li>为避免函数调用不可预期的永久阻塞，可以对IO操作设置超时，设置超时有哪些方法？</li>
+<li>最基本的读写函数read/write，及其各种变体（send, recv, recvmsg….）是什么样的关系？</li>
+<li>如果仅仅想查看套接字接收缓冲区的数据而不读取，要怎么做？</li>
+</ul>
+<h1 id="二、为套接字设置超时"><a href="#二、为套接字设置超时" class="headerlink" title="二、为套接字设置超时"></a>二、为套接字设置超时</h1><p>抛出各种具体方法：</p>
+<ul>
+<li>信号中断：alarm函数 + SIGALRM信号（缺点:干扰程序正常alarm的使用，在多线程程序中使用信号很困难）</li>
+<li>select保安：利用select可以设置超时，让select代为阻塞等待在IO上。</li>
+<li>套接字选项：SO_RCVTIMEO和SO_SNDTIMEO（不能用于connect设置超时）</li>
+</ul>
+<h1 id="三、读写函数的各种变体"><a href="#三、读写函数的各种变体" class="headerlink" title="三、读写函数的各种变体"></a>三、读写函数的各种变体</h1><p>基本read/write及其三种变体send/recv、readv/writev和recvmsg/sendmsg</p>
+<p>简要对比：</p>
+<ul>
+<li>send/recv对比read/write多了一个flags参数，可以传给内核；</li>
+<li>readv/writev对比read/write，后者是单个缓冲区的读写，前者则可以支持在单个系统调用中实现多个缓冲区的读写，称为“分散读”和“集中写”。</li>
+<li>recvmsg/sendmsg是最通用的函数，它集中了前面集中的所有特性。但是这组只能在套接字描述符中使用。</li>
+<li>sendto/recvfrom一般只在UDP套接字中使用。</li>
+</ul>
+<h2 id="send-recv"><a href="#send-recv" class="headerlink" title="send/recv"></a>send/recv</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> recv(<span class="keyword">int</span> sockfd, <span class="keyword">void</span>* buff, <span class="keyword">size_t</span> bytes, <span class="keyword">int</span> flags);</span><br><span class="line"><span class="keyword">ssize_t</span> send(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> <span class="keyword">void</span>* buff, <span class="keyword">size_t</span> bytes, <span class="keyword">int</span> flags);</span><br></pre></td></tr></table></figure>
+<p><strong>flags</strong>——值参数</p>
+<ul>
+<li>MSG_DONTROUTE: 发送操作无须路由，仅限发送操作。表示目的主机在某个直接连接的本地网络上。</li>
+<li><strong>MSG_DONTWAIT</strong>：单次操作“非阻塞”。</li>
+<li>MSG_OOB:对于send,表示即将发送的数据是带外数据（对于TCP只有一个字节）；对于recv表示，即将读入的是带外数据而不是普通数据。</li>
+<li><strong>MSG_PEEK</strong>:表示仅查看可读取的数据，不作读取。适用于recv和recvmsg。</li>
+<li><strong>MSG_WAITALL</strong>:表示尚未读到请求数目的字节之前不让一个读操作返回。意外情况:a. 捕获一个信号；b.连接被终止；c.套接字发生错误，相应的读函数仍旧可能返回少于请求数目的数据。</li>
+</ul>
+<h2 id="readv-writev"><a href="#readv-writev" class="headerlink" title="readv/writev"></a>readv/writev</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/io.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> readv(<span class="keyword">int</span> flags, <span class="keyword">const</span> struct iovec *iov, <span class="keyword">int</span> iovcnt);</span><br><span class="line"><span class="keyword">ssize_t</span> writev(<span class="keyword">int</span> flags, <span class="keyword">const</span> struct iovec *iov, <span class="keyword">int</span> iovcnt);</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span> *iov_base; <span class="comment">//缓冲区起始地址</span></span><br><span class="line">    <span class="keyword">void</span> *iov_len; <span class="comment">//缓冲区长度</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>注：</p>
+<ul>
+<li>writev是原子调用，对于数据报协议，一次writev调用只会产生一个UDP数据报。</li>
+<li>writev的一个用途：将小包数据经过整合，使用writev发送，可以有效防止Nagle算法的触发。</li>
+</ul>
+<h2 id="recvmsg-sendmsg"><a href="#recvmsg-sendmsg" class="headerlink" title="recvmsg/sendmsg"></a>recvmsg/sendmsg</h2><p>具体参见UNP14.6</p>
+<h1 id="四、获悉已排队的数据量"><a href="#四、获悉已排队的数据量" class="headerlink" title="四、获悉已排队的数据量"></a>四、获悉已排队的数据量</h1><p>方法：</p>
+<ul>
+<li>如果获悉已排队数据量的目的在于不想阻塞，那么可以使用非阻塞调用。</li>
+<li>如果既想查看数据，有想保留数据在接收队列中以供本进程其他部分稍后读取，可以使用MSG_PEEK。通常需要结合非阻塞+PEEK，要么是非阻塞套接字+MSG_PEEK,或者阻塞+MSG_DONTWAIT+MSG_PEEK。对于TCP，先只“获悉”，再次“读取”，两次调用的返回数据长度可能是不同的；对于UDP，两次调用的返回数据是完全相同的。</li>
+<li>ioctl + FIONREAD, 通过第三个参数（值——结果）返回当前接收队列的字节数。</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
   </section>
 
   
@@ -2191,7 +2120,7 @@ rvalue call, i = 10
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2213,7 +2142,7 @@ rvalue call, i = 10
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">9</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
