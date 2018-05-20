@@ -75,7 +75,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="TCP," />
 
 
 
@@ -86,14 +86,18 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="http://yoursite.com/categories/index.html">
+<meta name="description" content="本文关注内容：TCP连接的TIME_WAIT状态。TCP很重要的一个特性就是可靠性，这是在TCP协议的设计中考虑的重点。TIME_WAIT状态的引入，也是在为TCP可靠性做贡献。 为认识TIME_WAIT状态最基本的设计初衷，我们引一个场景： 在四次挥手阶段，主动关闭方接受被动关闭方的FIN包，然后发送给被动关闭方ACK。此时如果协议策略是直接关闭 连接，清理连接占用的资源。这样会出现问题：如果最">
+<meta name="keywords" content="TCP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TIME_WAIT状态">
+<meta property="og:url" content="http://yoursite.com/2017/11/03/2018-5-19TCP_TIME_WAIT/index.html">
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
+<meta property="og:description" content="本文关注内容：TCP连接的TIME_WAIT状态。TCP很重要的一个特性就是可靠性，这是在TCP协议的设计中考虑的重点。TIME_WAIT状态的引入，也是在为TCP可靠性做贡献。 为认识TIME_WAIT状态最基本的设计初衷，我们引一个场景： 在四次挥手阶段，主动关闭方接受被动关闭方的FIN包，然后发送给被动关闭方ACK。此时如果协议策略是直接关闭 连接，清理连接占用的资源。这样会出现问题：如果最">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-05-18T11:37:43.140Z">
+<meta property="og:updated_time" content="2018-05-20T12:02:02.372Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="categories">
+<meta name="twitter:title" content="TIME_WAIT状态">
+<meta name="twitter:description" content="本文关注内容：TCP连接的TIME_WAIT状态。TCP很重要的一个特性就是可靠性，这是在TCP协议的设计中考虑的重点。TIME_WAIT状态的引入，也是在为TCP可靠性做贡献。 为认识TIME_WAIT状态最基本的设计初衷，我们引一个场景： 在四次挥手阶段，主动关闭方接受被动关闭方的FIN包，然后发送给被动关闭方ACK。此时如果协议策略是直接关闭 连接，清理连接占用的资源。这样会出现问题：如果最">
 
 
 
@@ -123,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/categories/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/11/03/2018-5-19TCP_TIME_WAIT/"/>
 
 
 
 
 
-  <title>categories | Shunlqing's Blog</title>
+  <title>TIME_WAIT状态 | Shunlqing's Blog</title>
   
 
 
@@ -278,40 +282,194 @@
 
   <div id="posts" class="posts-expand">
     
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/03/2018-5-19TCP_TIME_WAIT/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/shunlqing.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
     
-    
-    <div class="post-block page">
       <header class="post-header">
 
-	<h1 class="post-title" itemprop="name headline">categories</h1>
-
-
-
-</header>
-
-      
-      
-      
-      <div class="post-body">
         
         
-          <div class="category-all-page">
-            <div class="category-all-title">
-                目前共计 7 个分类
-            </div>
-            <div class="category-all">
-              <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/技术笔记/">技术笔记</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/操作系统/">操作系统</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/操作系统/技术笔记/">技术笔记</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/效率/">效率</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/编程语言/">编程语言</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/编程语言/技术笔记/">技术笔记</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/网络编程/">网络编程</a><span class="category-list-count">1</span></li></ul>
-            </div>
-          </div>
+          <h1 class="post-title" itemprop="name headline">TIME_WAIT状态</h1>
         
-      </div>
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-03T00:00:00+08:00">
+                2017-11-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/网络编程/" itemprop="url" rel="index">
+                    <span itemprop="name">网络编程</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
       
       
+
+      
+        <p>本文关注内容：TCP连接的TIME_WAIT状态。TCP很重要的一个特性就是可靠性，这是在TCP协议的设计中考虑的重点。TIME_WAIT状态的引入，也是在为TCP可靠性做贡献。</p>
+<p>为认识TIME_WAIT状态最基本的<strong>设计初衷</strong>，我们引一个场景：</p>
+<pre><code>在四次挥手阶段，主动关闭方接受被动关闭方的FIN包，然后发送给被动关闭方ACK。此时如果协议策略是直接关闭
+连接，清理连接占用的资源。这样会出现问题：如果最后的ACK包丢失了，被动关闭方等待接受ACK超时，就要求重
+传。此时主动关闭方已经没有了那个连接的信息，所以发送一个RST。被动关闭方收到RST，一脸茫然。。。
+</code></pre><p>所以，<strong>主动关闭方</strong>在发给对端ACK包时，不能直接关闭连接，需要<strong>保证对端能够收到ACK包</strong>，必要时能够重传ACK包。此时主动关闭方所处的状态就是所谓的“TIME_WAIT”状态。</p>
+<h1 id="什么是TIME-WAIT状态"><a href="#什么是TIME-WAIT状态" class="headerlink" title="什么是TIME_WAIT状态"></a>什么是TIME_WAIT状态</h1><p>TIME_WAIT</p>
+<ul>
+<li>发生对象：TCP连接的主动关闭方（如果双方同时关闭，则都会进入TIME_WAIT状态）</li>
+<li>发生时机：四次挥手阶段，主动关闭方发出对被动关闭方FIN报文的ACK报文后。</li>
+<li>持续时长：2 * MSL （MSL：报文的最大生存时间，伯克利实现设置为30s）</li>
+</ul>
+<h1 id="TIME-WAIT的作用（用以解决什么问题）"><a href="#TIME-WAIT的作用（用以解决什么问题）" class="headerlink" title="TIME_WAIT的作用（用以解决什么问题）"></a>TIME_WAIT的作用（用以解决什么问题）</h1><p>文章开头我们提到一个TIME_WAIT的好处：（1）<strong>主动关闭方进入TIME_WAIT状态确保被动关闭方能够接收到FIN的ACK</strong>。除此之外，能够保证：（2）<strong>旧连接断开，一个一摸一样的新链接建立（源端口，源IP，目的端口，目的IP都一样），旧连接的数据包不会影响到新的连接</strong>。因为TIME_WAIT持续的时间，能够保证数据包在网络中消逝，而连接处于TIME_WAIT状态期间，主机不能使用当前的IP和端口组合建立连接。</p>
+<h1 id="TIME-WAIT有何负面影响"><a href="#TIME-WAIT有何负面影响" class="headerlink" title="TIME_WAIT有何负面影响"></a>TIME_WAIT有何负面影响</h1><p>TIME_WAIT状态需要持续2*MSL，长达1分钟，甚至更长。在这期间，该连接的端口不能用于建立新的连接。如果短时间内，关闭大量的连接，就会造成大量的TIME_WAIT。<br>两方面的影响：</p>
+<ul>
+<li>大量处于TIME_WAIT的连接，消耗主机内存资源（内核表示tcp的tuple）。</li>
+<li>TCP协议用于表示端口的字段为16bit，也就是说，理论上最多可使用65535个端口号，实际上可使用的更少。如果短时间内大量的TIME_WAIT，端口耗尽，就无法再发起新的连接了。</li>
+</ul>
+<h1 id="如何避免TIME-WAIT状态"><a href="#如何避免TIME-WAIT状态" class="headerlink" title="如何避免TIME_WAIT状态"></a>如何避免TIME_WAIT状态</h1><p>解决：</p>
+<ul>
+<li>TCP选项：TCP_REUSEADDR （强制可以重新使用！）</li>
+<li>参数：net.ipv4.tcp_tw_reuse和net.ipv4.tcp_tw_recycle（直接就不在TIME_WAIT状态呆着。。。）</li>
+<li>连接池（不着急关闭）</li>
+</ul>
+<p><strong>TCP_REUSEADDR</strong> ： 处于TIME_WAIT状态的socket是占有连接的，即不允许另一个socket绑定相同的ip和端口。TCP_REUSEADDR的作用就是：”允许处理TIME_WAIT的连接所占有的IP+端口组合得到复用”。不管之前的socket是否设置了该选项，只要当前的socket设置即可生效。</p>
+<p>net.ipv4.tcp_tw_reuse = 1允许在系统重用处于TIME_WAIT连接的端口，作用类似与TCP_REUSEADDR；net.ipv4.tcp_tw_recycle = 1是启用TIME_WAIT快速回收，意味直接就不进入TIME_WAIT状态，靠时间戳区分是旧连接还是新连接的数据包。该功能在NAT环境下可能会出现严重问题。</p>
+<p>连接池： 顾名思义，我们使用池子收集空闲的连接，而不是关闭它。这样就能减少TIME_WAIT状态的产生。这种解决方法适合特定的场景，比如数据库连接池。</p>
+<hr>
+<p>本文完。</p>
+
       
     </div>
     
     
     
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/TCP/" rel="tag"><i class="fa fa-tag"></i> TCP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/01/UDP_socket/" rel="prev" title="基本UDP编程">
+                基本UDP编程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
   </div>
 
 
@@ -342,8 +500,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -417,6 +584,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是TIME-WAIT状态"><span class="nav-text">什么是TIME_WAIT状态</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TIME-WAIT的作用（用以解决什么问题）"><span class="nav-text">TIME_WAIT的作用（用以解决什么问题）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TIME-WAIT有何负面影响"><span class="nav-text">TIME_WAIT有何负面影响</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何避免TIME-WAIT状态"><span class="nav-text">如何避免TIME_WAIT状态</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       

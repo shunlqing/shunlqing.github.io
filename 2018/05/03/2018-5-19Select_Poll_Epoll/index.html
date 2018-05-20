@@ -75,7 +75,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Linux,内核," />
 
 
 
@@ -86,14 +86,18 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="http://yoursite.com/categories/index.html">
+<meta name="description" content="本文关注内容：LinuxIO复用的三种机制，分别是Select、Poll以及Epoll。本文倾向于从浅谈三种机制的内核实现，来对比三种IO复用机制的性能差异。预备知识：等待队列和阻塞。 1 Select1.1 Select API12#include &amp;lt;sys/select.h&amp;gt;int select(int maxfdp1, fd_set *restrict readfds, fd_s">
+<meta name="keywords" content="Linux,内核">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Select、Poll与Epoll的区别">
+<meta property="og:url" content="http://yoursite.com/2018/05/03/2018-5-19Select_Poll_Epoll/index.html">
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
+<meta property="og:description" content="本文关注内容：LinuxIO复用的三种机制，分别是Select、Poll以及Epoll。本文倾向于从浅谈三种机制的内核实现，来对比三种IO复用机制的性能差异。预备知识：等待队列和阻塞。 1 Select1.1 Select API12#include &amp;lt;sys/select.h&amp;gt;int select(int maxfdp1, fd_set *restrict readfds, fd_s">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-05-18T11:37:43.140Z">
+<meta property="og:updated_time" content="2018-05-20T13:34:55.694Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="categories">
+<meta name="twitter:title" content="Select、Poll与Epoll的区别">
+<meta name="twitter:description" content="本文关注内容：LinuxIO复用的三种机制，分别是Select、Poll以及Epoll。本文倾向于从浅谈三种机制的内核实现，来对比三种IO复用机制的性能差异。预备知识：等待队列和阻塞。 1 Select1.1 Select API12#include &amp;lt;sys/select.h&amp;gt;int select(int maxfdp1, fd_set *restrict readfds, fd_s">
 
 
 
@@ -123,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/categories/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/05/03/2018-5-19Select_Poll_Epoll/"/>
 
 
 
 
 
-  <title>categories | Shunlqing's Blog</title>
+  <title>Select、Poll与Epoll的区别 | Shunlqing's Blog</title>
   
 
 
@@ -278,40 +282,222 @@
 
   <div id="posts" class="posts-expand">
     
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/03/2018-5-19Select_Poll_Epoll/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/shunlqing.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
     
-    
-    <div class="post-block page">
       <header class="post-header">
 
-	<h1 class="post-title" itemprop="name headline">categories</h1>
-
-
-
-</header>
-
-      
-      
-      
-      <div class="post-body">
         
         
-          <div class="category-all-page">
-            <div class="category-all-title">
-                目前共计 7 个分类
-            </div>
-            <div class="category-all">
-              <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/技术笔记/">技术笔记</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/操作系统/">操作系统</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/操作系统/技术笔记/">技术笔记</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/效率/">效率</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/编程语言/">编程语言</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/编程语言/技术笔记/">技术笔记</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/网络编程/">网络编程</a><span class="category-list-count">1</span></li></ul>
-            </div>
-          </div>
+          <h1 class="post-title" itemprop="name headline">Select、Poll与Epoll的区别</h1>
         
-      </div>
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-03T00:00:00+08:00">
+                2018-05-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/操作系统/" itemprop="url" rel="index">
+                    <span itemprop="name">操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
       
       
+
+      
+        <p>本文关注内容：LinuxIO复用的三种机制，分别是Select、Poll以及Epoll。本文倾向于从浅谈三种机制的内核实现，来对比三种IO复用机制的性能差异。预备知识：等待队列和阻塞。</p>
+<h1 id="1-Select"><a href="#1-Select" class="headerlink" title="1 Select"></a>1 Select</h1><h2 id="1-1-Select-API"><a href="#1-1-Select-API" class="headerlink" title="1.1 Select API"></a>1.1 Select API</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/select.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">select</span><span class="params">(<span class="keyword">int</span> maxfdp1, fd_set *<span class="keyword">restrict</span> readfds, fd_set* <span class="keyword">restrict</span> writefds, fd_set* <span class="keyword">restrict</span> exceptfds, struct timeval *<span class="keyword">restrict</span> tvptr)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="1-2-Select实现"><a href="#1-2-Select实现" class="headerlink" title="1.2 Select实现"></a>1.2 Select实现</h2><ul>
+<li>1.内核使用copy_from_user从用户空间拷贝fd_set到内核空间</li>
+<li>2.遍历所有关心的fd，如果fd就绪，就设置fd_set的值；如果fd不就绪，就将当前进程current加入到fd的等待队列（不休眠）。</li>
+<li>3.当遍历完所有的fd后，发现有fd就绪，则直接返回。如果没有一个是就绪的，那么调用schedule出让CPU进入睡眠（如果设置有超时时间，则调用schedule_timeout）。当有fd就绪的时候，会唤醒其等待队列上的进程。进程获得唤醒，再去重新遍历所有fd，判断是否有fd就绪。</li>
+<li>4.把fd_set从内核空间拷贝到用户空间。</li>
+</ul>
+<h2 id="1-3-Select的特点"><a href="#1-3-Select的特点" class="headerlink" title="1.3 Select的特点"></a>1.3 Select的特点</h2><ul>
+<li>1.每次调用select都要重新设置fd_set。缺点：浪费时间，影响性能。</li>
+<li>2.调用select进入内核，或者从内核返回，都要拷贝一次fd集合。缺点：浪费时间，影响性能。</li>
+<li>3.文件描述符用fd集合组织，支持的数量大少，默认是1024。</li>
+<li>4.应用程序需要遍历整个fd_set，来获取哪些fd上的读写事件就绪。如果只有几个fd有就绪事件，遍历整个fd_set会造成极大的性能浪费。</li>
+</ul>
+<h1 id="2-Poll"><a href="#2-Poll" class="headerlink" title="2 Poll"></a>2 Poll</h1><h2 id="2-1-Poll-API"><a href="#2-1-Poll-API" class="headerlink" title="2.1 Poll API"></a>2.1 Poll API</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;poll.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">poll</span><span class="params">(struct pollfd *fds, <span class="keyword">nfds_t</span> nfds, <span class="keyword">int</span> timeout)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> fd;</span><br><span class="line">    <span class="keyword">short</span> events;</span><br><span class="line">    <span class="keyword">short</span> revents;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="2-2-Poll实现"><a href="#2-2-Poll实现" class="headerlink" title="2.2 Poll实现"></a>2.2 Poll实现</h2><p>内核实现基本和Select相同，只是有一点不同。从poll()函数的参数可以看出。文件描述符改用pollfd结构的数组组织，数量就比select多得多。</p>
+<h2 id="2-3-Poll特点"><a href="#2-3-Poll特点" class="headerlink" title="2.3 Poll特点"></a>2.3 Poll特点</h2><ul>
+<li><ol>
+<li>调用poll进入内核或者从内核返回，内核都要拷贝一次pollfd结构数组。缺点：浪费时间。</li>
+</ol>
+</li>
+<li><ol>
+<li>应用程序需要遍历整个pollfd结构数组，才能获取哪些fd有就绪事件。</li>
+</ol>
+</li>
+</ul>
+<h1 id="3-Epoll"><a href="#3-Epoll" class="headerlink" title="3 Epoll"></a>3 Epoll</h1><p>Epoll由Select、Poll发展而来。从Select、Poll的缺点来看，我们可以总结一下几个优化点:</p>
+<ul>
+<li>1.Select、Poll每次调用都是一次独立的注册、收集、返回的过程，很低效。–&gt; Epoll将注册感兴趣事件和收集就绪事件分开。</li>
+<li>2.Select、Poll每次需要拷贝事件集合fd_set或事件数组到内核，收集事件时再拷贝到用户空间。 –&gt; Epoll对同一个事件，只注册一次。</li>
+<li>3.处理就绪事件，Select、Poll需要遍历整个fd_set或这pollfd结构数组。 –&gt; Epoll收集事件时只返回就绪的事件。</li>
+</ul>
+<h2 id="3-1-API"><a href="#3-1-API" class="headerlink" title="3.1 API"></a>3.1 API</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/epoll.h&gt; </span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_create</span><span class="params">(<span class="keyword">int</span> size)</span></span>; <span class="comment">// 初始化一个epfd</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">int</span> op, <span class="keyword">int</span> fd, struct epoll_event* event)</span></span>; <span class="comment">//添加、修改、删除感兴趣事件</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event* events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>; <span class="comment">//一次事件收集</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">union</span> epoll_data &#123;</span><br><span class="line">    <span class="keyword">void</span>    *ptr;</span><br><span class="line">    <span class="keyword">int</span>     fd;</span><br><span class="line">    <span class="keyword">uint32_t</span> u32;</span><br><span class="line">    <span class="keyword">uint64_t</span> u64;</span><br><span class="line">&#125; <span class="keyword">epoll_data_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> &#123;</span></span><br><span class="line">    <span class="keyword">uint32_t</span>    events;</span><br><span class="line">    <span class="keyword">epoll_data_t</span> data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="3-2-Epoll实现"><a href="#3-2-Epoll实现" class="headerlink" title="3.2 Epoll实现"></a>3.2 Epoll实现</h2><p><code>epoll_create</code>分配一个文件描述符以及对应的struct file结构。分配一个struct eventpoll结构用体于管理，在该结构体初始化红黑树头节点，初始化就绪链表，初始化等待队列等等。这个eventpoll结构是epoll的关键，它管理这一棵红黑树，一个就绪链表，一个等待队列等等。</p>
+<ul>
+<li>红黑树：高效的插入和删除操作。用于在添加、修改、删除感兴趣事件。</li>
+<li>就绪链表：存放已经就绪的事件。epoll_wait直接从这里拷贝事件返回用户。</li>
+<li>等待队列：如果有多个进程等待在这个epfd上，则会加入到这个等待队列。</li>
+</ul>
+<p><code>epoll_ctl</code>+ add操作：分配一个与要监听的fd对应的epitem，并初始化相应的成员，然后插入到红黑树。并将当前进程current挂到对应fd的等待队列，并注册一个回调函数。该回调函数会在fd就绪时，将事件结构体加入到就绪队列中（这点有设备驱动触发中断完成）。<code>epoll_ctl</code>的删除操作和修改差不多。</p>
+<p><code>epoll_wait</code>直接查看就绪链表是否为空，如果不为空，则拷贝事件到用户态，然后返回。如果为空，则加入epfd的等待队列睡眠，等待被唤醒（如果设置超时的话，则要么超时醒来，要么有事件就绪，醒来）。进程醒过来，对就绪链表逐一拷贝到用户态。这里是先拷贝中间链表，在拷贝期间发生的事件仍然能够加入到就绪链表，等待下次epoll_wait收集。</p>
+<h2 id="3-3-ET和LT的实现"><a href="#3-3-ET和LT的实现" class="headerlink" title="3.3 ET和LT的实现"></a>3.3 ET和LT的实现</h2><p>其实内核在实现ET和LT的时候非常简单。就是在拷贝就绪链表的时候，内核判断事件类型，如果是ET模式，则直接清除掉。如果是LT模式，只要相应的fd仍是就绪的，则重新加入就绪链表。</p>
+<p>另外有一个细节：在注册感兴趣的事件的时候，内核就会检查fd是否就绪，如果就绪，则直接加入就绪链表（可见，就绪事件加入就绪链表不一定是设备驱动触发的）。</p>
+<h2 id="3-4-Epoll的优点"><a href="#3-4-Epoll的优点" class="headerlink" title="3.4 Epoll的优点"></a>3.4 Epoll的优点</h2><ul>
+<li>使用红黑树管理监听的文件描述符，高效的插入、删除操作。</li>
+<li>事件只需注册一次。</li>
+<li>支持监听的文件描述符的数量非常大。</li>
+<li>每次返回的是就绪的fd数组。Select、Poll需要遍历整个所有描述符。</li>
+</ul>
+<hr>
+<p>本文完。</p>
+
       
     </div>
     
     
     
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"><i class="fa fa-tag"></i> Linux</a>
+          
+            <a href="/tags/内核/" rel="tag"><i class="fa fa-tag"></i> 内核</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/01/2018-3-1InterruptAndException/" rel="next" title="中断和异常——内核的动力">
+                <i class="fa fa-chevron-left"></i> 中断和异常——内核的动力
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/17/2018-3-6rvalue/" rel="prev" title="C++11——理解右值">
+                C++11——理解右值 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
   </div>
 
 
@@ -342,8 +528,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -417,6 +612,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-Select"><span class="nav-text">1 Select</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-Select-API"><span class="nav-text">1.1 Select API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-Select实现"><span class="nav-text">1.2 Select实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-Select的特点"><span class="nav-text">1.3 Select的特点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-Poll"><span class="nav-text">2 Poll</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-Poll-API"><span class="nav-text">2.1 Poll API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-Poll实现"><span class="nav-text">2.2 Poll实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-Poll特点"><span class="nav-text">2.3 Poll特点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-Epoll"><span class="nav-text">3 Epoll</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-API"><span class="nav-text">3.1 API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-Epoll实现"><span class="nav-text">3.2 Epoll实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-ET和LT的实现"><span class="nav-text">3.3 ET和LT的实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-Epoll的优点"><span class="nav-text">3.4 Epoll的优点</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
