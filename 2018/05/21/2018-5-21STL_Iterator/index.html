@@ -75,7 +75,7 @@
 
 
 
-  <meta name="keywords" content="TCP," />
+  <meta name="keywords" content="C/C++,STL," />
 
 
 
@@ -86,18 +86,18 @@
 
 
 
-<meta name="description" content="本文关注内容：TCP连接的TIME_WAIT状态。TCP很重要的一个特性就是可靠性，这是在TCP协议的设计中考虑的重点。TIME_WAIT状态的引入，也是在为TCP可靠性做贡献。 为认识TIME_WAIT状态最基本的设计初衷，我们引一个场景： 在四次挥手阶段，主动关闭方接受被动关闭方的FIN包，然后发送给被动关闭方ACK。此时如果协议策略是直接关闭 连接，清理连接占用的资源。这样会出现问题：如果最">
-<meta name="keywords" content="TCP">
+<meta name="description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。  反">
+<meta name="keywords" content="C&#x2F;C++,STL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="TIME_WAIT状态">
-<meta property="og:url" content="http://yoursite.com/2017/11/03/2018-5-19TCP_TIME_WAIT/index.html">
+<meta property="og:title" content="STL——迭代器">
+<meta property="og:url" content="http://yoursite.com/2018/05/21/2018-5-21STL_Iterator/index.html">
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
-<meta property="og:description" content="本文关注内容：TCP连接的TIME_WAIT状态。TCP很重要的一个特性就是可靠性，这是在TCP协议的设计中考虑的重点。TIME_WAIT状态的引入，也是在为TCP可靠性做贡献。 为认识TIME_WAIT状态最基本的设计初衷，我们引一个场景： 在四次挥手阶段，主动关闭方接受被动关闭方的FIN包，然后发送给被动关闭方ACK。此时如果协议策略是直接关闭 连接，清理连接占用的资源。这样会出现问题：如果最">
+<meta property="og:description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。  反">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-05-20T12:02:02.372Z">
+<meta property="og:updated_time" content="2018-05-21T14:47:59.741Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="TIME_WAIT状态">
-<meta name="twitter:description" content="本文关注内容：TCP连接的TIME_WAIT状态。TCP很重要的一个特性就是可靠性，这是在TCP协议的设计中考虑的重点。TIME_WAIT状态的引入，也是在为TCP可靠性做贡献。 为认识TIME_WAIT状态最基本的设计初衷，我们引一个场景： 在四次挥手阶段，主动关闭方接受被动关闭方的FIN包，然后发送给被动关闭方ACK。此时如果协议策略是直接关闭 连接，清理连接占用的资源。这样会出现问题：如果最">
+<meta name="twitter:title" content="STL——迭代器">
+<meta name="twitter:description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。  反">
 
 
 
@@ -127,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/11/03/2018-5-19TCP_TIME_WAIT/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/05/21/2018-5-21STL_Iterator/"/>
 
 
 
 
 
-  <title>TIME_WAIT状态 | Shunlqing's Blog</title>
+  <title>STL——迭代器 | Shunlqing's Blog</title>
   
 
 
@@ -294,7 +294,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/03/2018-5-19TCP_TIME_WAIT/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/21/2018-5-21STL_Iterator/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
@@ -311,7 +311,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">TIME_WAIT状态</h1>
+          <h1 class="post-title" itemprop="name headline">STL——迭代器</h1>
         
 
         <div class="post-meta">
@@ -323,8 +323,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-03T00:00:00+08:00">
-                2017-11-03
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-21T00:00:00+08:00">
+                2018-05-21
               </time>
             
 
@@ -346,8 +346,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/网络编程/" itemprop="url" rel="index">
-                    <span itemprop="name">网络编程</span>
+                  <a href="/categories/编程语言/" itemprop="url" rel="index">
+                    <span itemprop="name">编程语言</span>
                   </a>
                 </span>
 
@@ -383,35 +383,56 @@
       
 
       
-        <p>本文关注内容：TCP连接的TIME_WAIT状态。TCP很重要的一个特性就是可靠性，这是在TCP协议的设计中考虑的重点。TIME_WAIT状态的引入，也是在为TCP可靠性做贡献。</p>
-<p>为认识TIME_WAIT状态最基本的<strong>设计初衷</strong>，我们引一个场景：</p>
-<pre><code>在四次挥手阶段，主动关闭方接受被动关闭方的FIN包，然后发送给被动关闭方ACK。此时如果协议策略是直接关闭
-连接，清理连接占用的资源。这样会出现问题：如果最后的ACK包丢失了，被动关闭方等待接受ACK超时，就要求重
-传。此时主动关闭方已经没有了那个连接的信息，所以发送一个RST。被动关闭方收到RST，一脸茫然。。。
-</code></pre><p>所以，<strong>主动关闭方</strong>在发给对端ACK包时，不能直接关闭连接，需要<strong>保证对端能够收到ACK包</strong>，必要时能够重传ACK包。此时主动关闭方所处的状态就是所谓的“TIME_WAIT”状态。</p>
-<h1 id="什么是TIME-WAIT状态"><a href="#什么是TIME-WAIT状态" class="headerlink" title="什么是TIME_WAIT状态"></a>什么是TIME_WAIT状态</h1><p>TIME_WAIT</p>
+        <p>本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。</p>
+<h1 id="没有迭代器的日子"><a href="#没有迭代器的日子" class="headerlink" title="没有迭代器的日子"></a>没有迭代器的日子</h1><pre><code>刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是：
+为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个
+find算法。无比繁琐。
+
+反观find算法，它无非是从容器的第一个节点开始，每次往前走一个节点，然后进行比对。关键的不同在于不同的容器每向前走
+一步的行为方式是不同的，对数组是直接往前走一个元素的尺寸；对于链表，需要找到下一个节点的地址，然后跳转到那个地址。
+</code></pre><p>怎么样才能让一个find，可以操作各种不同的容器呢？让算法只关心它自己的核心行为，也就是算法行为本身（find: 从第一个元素，比对一次，找下一个元素，再比对，再找下一个，直到找到或到达容器尾部）。而具体在容器上的行为，算法不关心。</p>
+<h1 id="迭代器"><a href="#迭代器" class="headerlink" title="迭代器"></a>迭代器</h1><p>为了让算法和容器之间解耦，我们引入一个“中间人”角色。我们为每个容器设计一个中间人，这个中间人代表着容器，对外它们有着一样的接口，对内，不同容器的中间人是不一样的。承接上文，这个“中间人”就是让算法“驱使”的。算法让“中间人”往前走一步，它就走一步。但是具体是怎么前进的，中间人知道就可以了，算法不理会。而这个中间人，就是所谓的<strong>迭代器</strong>。</p>
+<!--写到这，想起还珠格格 小卓子，小邓子 -->
+<p>迭代器其实是23种设计模式中的一种，模式定义如下：</p>
+<pre><code>提供一种方法，使之能够依序巡访某个聚合物（容器）所含的各个元素，而又无需暴露该聚合物的内部表述方式。
+</code></pre><p>另一方面，STL的中心思想在于：将数据容器和算法分开、彼此独立设计，最后再用迭代器联系在一起，完美！</p>
+<h1 id="作为一个代表，迭代器需要知道容器哪些属性"><a href="#作为一个代表，迭代器需要知道容器哪些属性" class="headerlink" title="作为一个代表，迭代器需要知道容器哪些属性"></a>作为一个代表，迭代器需要知道容器哪些属性</h1><p>迭代器最终是被算法所使用的。因此，迭代器需要知道容器的哪些信息，完全是由算法决定的。</p>
 <ul>
-<li>发生对象：TCP连接的主动关闭方（如果双方同时关闭，则都会进入TIME_WAIT状态）</li>
-<li>发生时机：四次挥手阶段，主动关闭方发出对被动关闭方FIN报文的ACK报文后。</li>
-<li>持续时长：2 * MSL （MSL：报文的最大生存时间，伯克利实现设置为30s）</li>
+<li>最基本的，算法需要知道容器元素的类型T。</li>
+<li>算法可能需要获取容器元素类型的引用，获知其是否可以修改。迭代器要提供。</li>
+<li>算法可能需要获取容器元素类型的指针，迭代器要提供。</li>
+<li>算法需要在容器元素之间移动，所以迭代器需要提供在容器元素之间移动的方式。比如++，–，+n，-n等。</li>
+<li>等等。。。</li>
 </ul>
-<h1 id="TIME-WAIT的作用（用以解决什么问题）"><a href="#TIME-WAIT的作用（用以解决什么问题）" class="headerlink" title="TIME_WAIT的作用（用以解决什么问题）"></a>TIME_WAIT的作用（用以解决什么问题）</h1><p>文章开头我们提到一个TIME_WAIT的好处：（1）<strong>主动关闭方进入TIME_WAIT状态确保被动关闭方能够接收到FIN的ACK</strong>。除此之外，能够保证：（2）<strong>旧连接断开，一个一摸一样的新链接建立（源端口，源IP，目的端口，目的IP都一样），旧连接的数据包不会影响到新的连接</strong>。因为TIME_WAIT持续的时间，能够保证数据包在网络中消逝，而连接处于TIME_WAIT状态期间，主机不能使用当前的IP和端口组合建立连接。</p>
-<h1 id="TIME-WAIT有何负面影响"><a href="#TIME-WAIT有何负面影响" class="headerlink" title="TIME_WAIT有何负面影响"></a>TIME_WAIT有何负面影响</h1><p>TIME_WAIT状态需要持续2*MSL，长达1分钟，甚至更长。在这期间，该连接的端口不能用于建立新的连接。如果短时间内，关闭大量的连接，就会造成大量的TIME_WAIT。<br>两方面的影响：</p>
+<p>STL设计者归纳起来，作为迭代器，需要记录容器的五种信息，这五个信息作为迭代器的属性：</p>
 <ul>
-<li>大量处于TIME_WAIT的连接，消耗主机内存资源（内核表示tcp的tuple）。</li>
-<li>TCP协议用于表示端口的字段为16bit，也就是说，理论上最多可使用65535个端口号，实际上可使用的更少。如果短时间内大量的TIME_WAIT，端口耗尽，就无法再发起新的连接了。</li>
+<li><code>value_type</code>: 迭代器所指对象之类型，一般可以直接理解为容器元素的类型。</li>
+<li><code>different_type</code>: 两个迭代器之间的距离类型。</li>
+<li><code>reference_type</code>: 迭代器是const还是非const，表征是否可在相应容器元素上做修改。</li>
+<li><code>pointer_type</code>: 迭代器所指对象的指针类型。</li>
+<li><code>iterator_category</code>: 反映迭代器的移动特性和实施操作。比如最基本的++行为在不同容器的迭代器是不同的。（STL设计者在此做了很多巧妙的设计）</li>
 </ul>
-<h1 id="如何避免TIME-WAIT状态"><a href="#如何避免TIME-WAIT状态" class="headerlink" title="如何避免TIME_WAIT状态"></a>如何避免TIME_WAIT状态</h1><p>解决：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// std::iterator</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">Category</span>, <span class="title">class</span> <span class="title">T</span>, <span class="title">class</span> <span class="title">Distance</span> = <span class="title">ptrdiff_t</span>, </span></span><br><span class="line"><span class="class">        <span class="title">class</span> <span class="title">Pointer</span> = <span class="title">T</span>*, <span class="title">class</span> <span class="title">Reference</span> = <span class="title">T</span>&amp;&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator</span> &#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> Category    iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> T           value_type;</span><br><span class="line">    <span class="keyword">typedef</span> Distance    difference_type;</span><br><span class="line">    <span class="keyword">typedef</span> Pointer     pointer;</span><br><span class="line">    <span class="keyword">typedef</span> Reference   reference;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>此外，迭代器还要记录容器的<strong>操作方式和移动方式</strong>，这有点想智能指针。比如：</p>
 <ul>
-<li>TCP选项：TCP_REUSEADDR （强制可以重新使用！）</li>
-<li>参数：net.ipv4.tcp_tw_reuse和net.ipv4.tcp_tw_recycle（直接就不在TIME_WAIT状态呆着。。。）</li>
-<li>连接池（不着急关闭）</li>
+<li><code>operator*</code></li>
+<li><code>operator-&gt;</code></li>
+<li><code>operator++</code></li>
+<li><code>operator--</code></li>
 </ul>
-<p><strong>TCP_REUSEADDR</strong> ： 处于TIME_WAIT状态的socket是占有连接的，即不允许另一个socket绑定相同的ip和端口。TCP_REUSEADDR的作用就是：”允许处理TIME_WAIT的连接所占有的IP+端口组合得到复用”。不管之前的socket是否设置了该选项，只要当前的socket设置即可生效。</p>
-<p>net.ipv4.tcp_tw_reuse = 1允许在系统重用处于TIME_WAIT连接的端口，作用类似与TCP_REUSEADDR；net.ipv4.tcp_tw_recycle = 1是启用TIME_WAIT快速回收，意味直接就不进入TIME_WAIT状态，靠时间戳区分是旧连接还是新连接的数据包。该功能在NAT环境下可能会出现严重问题。</p>
-<p>连接池： 顾名思义，我们使用池子收集空闲的连接，而不是关闭它。这样就能减少TIME_WAIT状态的产生。这种解决方法适合特定的场景，比如数据库连接池。</p>
-<hr>
-<p>本文完。</p>
+<p>也就是说，如果一个独立设计的容器能够提供符合其特点、同时满足上述定义的迭代器，那么这个容器就能加入到STL算法的大家庭中。</p>
+<h1 id="迭代器设计的工作"><a href="#迭代器设计的工作" class="headerlink" title="迭代器设计的工作"></a>迭代器设计的工作</h1><p>针对特定的容器，设计迭代器所要做的工作就是分析并精确定义前面描述五种类型，以及各种操作，比如operator++，operator–,operator-&gt;,operator*等等。</p>
+<p>比如，容器list的迭代器<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>, <span class="title">class</span> <span class="title">Ref</span>, <span class="title">class</span> <span class="title">Ptr</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">list_iterator</span> &#123;</span></span><br><span class="line">    <span class="comment">//五种迭代器的属性，使用内嵌类型的方式声明，用于萃取</span></span><br><span class="line">    <span class="keyword">typedef</span> bidirectional_iterator_tag  iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> T   value_type;</span><br><span class="line">    <span class="keyword">typedef</span> Ptr pointer;</span><br><span class="line">    <span class="keyword">typedef</span> Ref reference;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">ptrdiff_t</span>  difference_type;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 各种移动方式和操作方式</span></span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>==(<span class="keyword">const</span> self&amp; x) <span class="keyword">const</span> &#123; <span class="keyword">return</span> node == x.node; &#125; <span class="comment">// 类似指针比较</span></span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>!=(<span class="keyword">const</span> self&amp; x) <span class="keyword">const</span> &#123; <span class="keyword">return</span> node != x.node; &#125; <span class="comment">// </span></span><br><span class="line"></span><br><span class="line">    reference <span class="keyword">operator</span>*() <span class="keyword">const</span> &#123; <span class="keyword">return</span> (*node).data; &#125; <span class="comment">//迭代器取值，取的是节点的值</span></span><br><span class="line"></span><br><span class="line">    pointer <span class="keyword">operator</span>-&gt;() <span class="keyword">const</span> &#123; <span class="keyword">return</span> &amp;(<span class="keyword">operator</span>*()); &#125; </span><br><span class="line"></span><br><span class="line">    self&amp; <span class="keyword">operator</span>++() &#123;&#125; <span class="comment">//前置++</span></span><br><span class="line">    self <span class="keyword">operator</span>++(<span class="keyword">int</span> n) &#123;&#125; <span class="comment">//后置++</span></span><br><span class="line">    self&amp; <span class="keyword">operator</span>--() &#123;&#125; <span class="comment">//前置--</span></span><br><span class="line">    self <span class="keyword">operator</span>--(<span class="keyword">int</span> n) &#123;&#125; <span class="comment">//后置--</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>另外，因为原生指针<code>T*</code>满足vector迭代器该有的属性，所以vector的迭代器直接使用<code>T*</code><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>, <span class="title">class</span> <span class="title">Alloc</span> = <span class="title">alloc</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">vector</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">typedef</span> T*  iterator;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<!-- 以vector和list为例子 -->
+<h1 id="算法怎么获取迭代器的属性"><a href="#算法怎么获取迭代器的属性" class="headerlink" title="算法怎么获取迭代器的属性"></a>算法怎么获取迭代器的属性</h1><p>STL设计者使用了一种很巧妙的方法：内嵌型别 + <code>iterator_traits</code>萃取。</p>
+<p><strong>内嵌性别</strong>指的是：直接在迭代器类的内部声明五种属性的类型（见前面list）。</p>
+<p><code>iterator_traits</code>萃取即：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">Iterator</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::iterator_category	iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::value_type			value_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::difference_type		difference_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::pointer				pointer;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::reference 			reference;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>iterator_traits是个模板类，通过模板参数迭代器的类型Iterator，萃取出迭代器的五种属性。而算法根据萃取出来的五种属性类型，而选择不同的策略。</p>
+<p>比如：根据萃取出来的距离类型声明返回值类型<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">Iterator</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">typename</span> <span class="title">iterator_traits</span>&lt;Iterator&gt;:</span>:difference_type</span><br><span class="line">distance(Iterator first, Iterator last)&#123;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> iterator_traits&lt;Iterator&gt;::iterator_category iterator_category;</span><br><span class="line">    <span class="keyword">return</span> _distance(first, last, iterator_category());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然而，问题来了，像vector这种直接把原生指针T*作为迭代器，并没有专门设计一个vector_iterator类，并在类内内嵌各种声明blablabla。怎么办？</p>
+<p>答案：模板偏特化</p>
+<p>比如，为原生指针而设计的traits偏特化版<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span>&lt;T*&gt;</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> random_access_iterator_tag 	iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> T 							value_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">ptrdiff_t</span> 					difference_type;</span><br><span class="line">    <span class="keyword">typedef</span> T*							pointer;</span><br><span class="line">    <span class="keyword">typedef</span> T&amp; 							reference;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -429,7 +450,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/TCP/" rel="tag"><i class="fa fa-tag"></i> TCP</a>
+            <a href="/tags/C-C/" rel="tag"><i class="fa fa-tag"></i> C/C++</a>
+          
+            <a href="/tags/STL/" rel="tag"><i class="fa fa-tag"></i> STL</a>
           
         </div>
       
@@ -442,14 +465,18 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2018/05/19/2018_5_19LinuxKernel_WaitQueue/" rel="next" title="Linux内核——等待队列浅谈">
+                <i class="fa fa-chevron-left"></i> Linux内核——等待队列浅谈
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/12/01/UDP_socket/" rel="prev" title="基本UDP编程">
-                基本UDP编程 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/05/21/2018-5-21Linux_Process/" rel="prev" title="">
+                 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -594,7 +621,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是TIME-WAIT状态"><span class="nav-text">什么是TIME_WAIT状态</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TIME-WAIT的作用（用以解决什么问题）"><span class="nav-text">TIME_WAIT的作用（用以解决什么问题）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TIME-WAIT有何负面影响"><span class="nav-text">TIME_WAIT有何负面影响</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何避免TIME-WAIT状态"><span class="nav-text">如何避免TIME_WAIT状态</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#没有迭代器的日子"><span class="nav-text">没有迭代器的日子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#迭代器"><span class="nav-text">迭代器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#作为一个代表，迭代器需要知道容器哪些属性"><span class="nav-text">作为一个代表，迭代器需要知道容器哪些属性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#迭代器设计的工作"><span class="nav-text">迭代器设计的工作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#算法怎么获取迭代器的属性"><span class="nav-text">算法怎么获取迭代器的属性</span></a></li></ol></div>
             
 
           </div>
