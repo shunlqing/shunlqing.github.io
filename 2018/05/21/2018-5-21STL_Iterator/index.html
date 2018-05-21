@@ -86,18 +86,18 @@
 
 
 
-<meta name="description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。  反">
+<meta name="description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 1 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。">
 <meta name="keywords" content="C&#x2F;C++,STL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="STL——迭代器">
 <meta property="og:url" content="http://yoursite.com/2018/05/21/2018-5-21STL_Iterator/index.html">
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
-<meta property="og:description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。  反">
+<meta property="og:description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 1 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-05-21T14:47:59.741Z">
+<meta property="og:updated_time" content="2018-05-21T15:04:46.067Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="STL——迭代器">
-<meta name="twitter:description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。  反">
+<meta name="twitter:description" content="本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。 1 没有迭代器的日子刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是： 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个 find算法。无比繁琐。">
 
 
 
@@ -384,19 +384,19 @@
 
       
         <p>本文主要关注STL的迭代器，浅谈迭代器在STL中扮演什么样的角色，以及它是怎么起作用的。</p>
-<h1 id="没有迭代器的日子"><a href="#没有迭代器的日子" class="headerlink" title="没有迭代器的日子"></a>没有迭代器的日子</h1><pre><code>刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是：
+<h1 id="1-没有迭代器的日子"><a href="#1-没有迭代器的日子" class="headerlink" title="1 没有迭代器的日子"></a>1 没有迭代器的日子</h1><pre><code>刚学数据结构与算法的时候，我们写一个数组容器array，写一个链表容器list，如果要写一个查找算法find，我们的做法是：
 为array写一个array_find，为list写一个list_find。当有更多不同的数据结构，我们就要为不同的数据结构都分别写一个
 find算法。无比繁琐。
 
 反观find算法，它无非是从容器的第一个节点开始，每次往前走一个节点，然后进行比对。关键的不同在于不同的容器每向前走
 一步的行为方式是不同的，对数组是直接往前走一个元素的尺寸；对于链表，需要找到下一个节点的地址，然后跳转到那个地址。
 </code></pre><p>怎么样才能让一个find，可以操作各种不同的容器呢？让算法只关心它自己的核心行为，也就是算法行为本身（find: 从第一个元素，比对一次，找下一个元素，再比对，再找下一个，直到找到或到达容器尾部）。而具体在容器上的行为，算法不关心。</p>
-<h1 id="迭代器"><a href="#迭代器" class="headerlink" title="迭代器"></a>迭代器</h1><p>为了让算法和容器之间解耦，我们引入一个“中间人”角色。我们为每个容器设计一个中间人，这个中间人代表着容器，对外它们有着一样的接口，对内，不同容器的中间人是不一样的。承接上文，这个“中间人”就是让算法“驱使”的。算法让“中间人”往前走一步，它就走一步。但是具体是怎么前进的，中间人知道就可以了，算法不理会。而这个中间人，就是所谓的<strong>迭代器</strong>。</p>
+<h1 id="2-引入迭代器"><a href="#2-引入迭代器" class="headerlink" title="2 引入迭代器"></a>2 引入迭代器</h1><p>为了让算法和容器之间解耦，我们引入一个“中间人”角色。我们为每个容器设计一个中间人，这个中间人代表着容器，对外它们有着一样的接口，对内，不同容器的中间人是不一样的。承接上文，这个“中间人”就是让算法“驱使”的。算法让“中间人”往前走一步，它就走一步。但是具体是怎么前进的，中间人知道就可以了，算法不理会。而这个中间人，就是所谓的<strong>迭代器</strong>。</p>
 <!--写到这，想起还珠格格 小卓子，小邓子 -->
 <p>迭代器其实是23种设计模式中的一种，模式定义如下：</p>
 <pre><code>提供一种方法，使之能够依序巡访某个聚合物（容器）所含的各个元素，而又无需暴露该聚合物的内部表述方式。
 </code></pre><p>另一方面，STL的中心思想在于：将数据容器和算法分开、彼此独立设计，最后再用迭代器联系在一起，完美！</p>
-<h1 id="作为一个代表，迭代器需要知道容器哪些属性"><a href="#作为一个代表，迭代器需要知道容器哪些属性" class="headerlink" title="作为一个代表，迭代器需要知道容器哪些属性"></a>作为一个代表，迭代器需要知道容器哪些属性</h1><p>迭代器最终是被算法所使用的。因此，迭代器需要知道容器的哪些信息，完全是由算法决定的。</p>
+<h1 id="3-作为一个代表，迭代器需要知道容器哪些属性"><a href="#3-作为一个代表，迭代器需要知道容器哪些属性" class="headerlink" title="3 作为一个代表，迭代器需要知道容器哪些属性"></a>3 作为一个代表，迭代器需要知道容器哪些属性</h1><p>迭代器最终是被算法所使用的。因此，迭代器需要知道容器的哪些信息，完全是由算法决定的。</p>
 <ul>
 <li>最基本的，算法需要知道容器元素的类型T。</li>
 <li>算法可能需要获取容器元素类型的引用，获知其是否可以修改。迭代器要提供。</li>
@@ -421,18 +421,20 @@ find算法。无比繁琐。
 <li><code>operator--</code></li>
 </ul>
 <p>也就是说，如果一个独立设计的容器能够提供符合其特点、同时满足上述定义的迭代器，那么这个容器就能加入到STL算法的大家庭中。</p>
-<h1 id="迭代器设计的工作"><a href="#迭代器设计的工作" class="headerlink" title="迭代器设计的工作"></a>迭代器设计的工作</h1><p>针对特定的容器，设计迭代器所要做的工作就是分析并精确定义前面描述五种类型，以及各种操作，比如operator++，operator–,operator-&gt;,operator*等等。</p>
+<h1 id="4-迭代器设计的工作"><a href="#4-迭代器设计的工作" class="headerlink" title="4 迭代器设计的工作"></a>4 迭代器设计的工作</h1><p>针对特定的容器，设计迭代器所要做的工作就是分析并精确定义前面描述五种类型，以及各种操作，比如operator++，operator–,operator-&gt;,operator*等等。</p>
 <p>比如，容器list的迭代器<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>, <span class="title">class</span> <span class="title">Ref</span>, <span class="title">class</span> <span class="title">Ptr</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">list_iterator</span> &#123;</span></span><br><span class="line">    <span class="comment">//五种迭代器的属性，使用内嵌类型的方式声明，用于萃取</span></span><br><span class="line">    <span class="keyword">typedef</span> bidirectional_iterator_tag  iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> T   value_type;</span><br><span class="line">    <span class="keyword">typedef</span> Ptr pointer;</span><br><span class="line">    <span class="keyword">typedef</span> Ref reference;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">ptrdiff_t</span>  difference_type;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 各种移动方式和操作方式</span></span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>==(<span class="keyword">const</span> self&amp; x) <span class="keyword">const</span> &#123; <span class="keyword">return</span> node == x.node; &#125; <span class="comment">// 类似指针比较</span></span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>!=(<span class="keyword">const</span> self&amp; x) <span class="keyword">const</span> &#123; <span class="keyword">return</span> node != x.node; &#125; <span class="comment">// </span></span><br><span class="line"></span><br><span class="line">    reference <span class="keyword">operator</span>*() <span class="keyword">const</span> &#123; <span class="keyword">return</span> (*node).data; &#125; <span class="comment">//迭代器取值，取的是节点的值</span></span><br><span class="line"></span><br><span class="line">    pointer <span class="keyword">operator</span>-&gt;() <span class="keyword">const</span> &#123; <span class="keyword">return</span> &amp;(<span class="keyword">operator</span>*()); &#125; </span><br><span class="line"></span><br><span class="line">    self&amp; <span class="keyword">operator</span>++() &#123;&#125; <span class="comment">//前置++</span></span><br><span class="line">    self <span class="keyword">operator</span>++(<span class="keyword">int</span> n) &#123;&#125; <span class="comment">//后置++</span></span><br><span class="line">    self&amp; <span class="keyword">operator</span>--() &#123;&#125; <span class="comment">//前置--</span></span><br><span class="line">    self <span class="keyword">operator</span>--(<span class="keyword">int</span> n) &#123;&#125; <span class="comment">//后置--</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
 <p>另外，因为原生指针<code>T*</code>满足vector迭代器该有的属性，所以vector的迭代器直接使用<code>T*</code><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>, <span class="title">class</span> <span class="title">Alloc</span> = <span class="title">alloc</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">vector</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">typedef</span> T*  iterator;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
 <!-- 以vector和list为例子 -->
-<h1 id="算法怎么获取迭代器的属性"><a href="#算法怎么获取迭代器的属性" class="headerlink" title="算法怎么获取迭代器的属性"></a>算法怎么获取迭代器的属性</h1><p>STL设计者使用了一种很巧妙的方法：内嵌型别 + <code>iterator_traits</code>萃取。</p>
+<h1 id="5-算法怎么获取迭代器的属性"><a href="#5-算法怎么获取迭代器的属性" class="headerlink" title="5 算法怎么获取迭代器的属性"></a>5 算法怎么获取迭代器的属性</h1><p>STL设计者使用了一种很巧妙的方法：内嵌型别 + <code>iterator_traits</code>萃取。</p>
 <p><strong>内嵌性别</strong>指的是：直接在迭代器类的内部声明五种属性的类型（见前面list）。</p>
 <p><code>iterator_traits</code>萃取即：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">Iterator</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::iterator_category	iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::value_type			value_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::difference_type		difference_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::pointer				pointer;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::reference 			reference;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>iterator_traits是个模板类，通过模板参数迭代器的类型Iterator，萃取出迭代器的五种属性。而算法根据萃取出来的五种属性类型，而选择不同的策略。</p>
+<p>iterator_traits是个模板类，通过模板参数（迭代器的类型）Iterator，萃取出迭代器的五种属性。而算法根据萃取出来的五种属性类型，而选择不同的策略。</p>
 <p>比如：根据萃取出来的距离类型声明返回值类型<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">Iterator</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">typename</span> <span class="title">iterator_traits</span>&lt;Iterator&gt;:</span>:difference_type</span><br><span class="line">distance(Iterator first, Iterator last)&#123;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> iterator_traits&lt;Iterator&gt;::iterator_category iterator_category;</span><br><span class="line">    <span class="keyword">return</span> _distance(first, last, iterator_category());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>然而，问题来了，像vector这种直接把原生指针T*作为迭代器，并没有专门设计一个vector_iterator类，并在类内内嵌各种声明blablabla。怎么办？</p>
 <p>答案：模板偏特化</p>
 <p>比如，为原生指针而设计的traits偏特化版<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span>&lt;T*&gt;</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> random_access_iterator_tag 	iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> T 							value_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">ptrdiff_t</span> 					difference_type;</span><br><span class="line">    <span class="keyword">typedef</span> T*							pointer;</span><br><span class="line">    <span class="keyword">typedef</span> T&amp; 							reference;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>我们也要为const T*设计偏特化版本。具体可参考侯捷《STL源码剖析》</p>
+<p>讨论到此，我们对迭代器为何存在于STL中有了一定的认识。要深入认识，可以阅读源码。本文完。</p>
 
       
     </div>
@@ -474,10 +476,6 @@ find算法。无比繁琐。
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/05/21/2018-5-21Linux_Process/" rel="prev" title="">
-                 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -556,7 +554,7 @@ find算法。无比繁琐。
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-count">18</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -621,7 +619,7 @@ find算法。无比繁琐。
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#没有迭代器的日子"><span class="nav-text">没有迭代器的日子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#迭代器"><span class="nav-text">迭代器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#作为一个代表，迭代器需要知道容器哪些属性"><span class="nav-text">作为一个代表，迭代器需要知道容器哪些属性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#迭代器设计的工作"><span class="nav-text">迭代器设计的工作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#算法怎么获取迭代器的属性"><span class="nav-text">算法怎么获取迭代器的属性</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-没有迭代器的日子"><span class="nav-text">1 没有迭代器的日子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-引入迭代器"><span class="nav-text">2 引入迭代器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-作为一个代表，迭代器需要知道容器哪些属性"><span class="nav-text">3 作为一个代表，迭代器需要知道容器哪些属性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-迭代器设计的工作"><span class="nav-text">4 迭代器设计的工作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-算法怎么获取迭代器的属性"><span class="nav-text">5 算法怎么获取迭代器的属性</span></a></li></ol></div>
             
 
           </div>
