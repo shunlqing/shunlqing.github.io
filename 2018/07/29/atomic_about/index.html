@@ -78,7 +78,7 @@
 
 
 
-  <meta name="keywords" content="linux," />
+  <meta name="keywords" content="C++," />
 
 
 
@@ -89,20 +89,18 @@
 
 
 
-<meta name="description" content="文件描述符和句柄句柄，从一般意义上讲，句柄作为内核与用户的交互。用户无法指定内核对象的本体，内核可以提供一个整数值，在内核创建内核对象的时候，返回给用户。用户在想调用该对象的时候，可以指定。 例如，文件在内核的活动对象是一个个file结构，对于用户来说，文件描述符代表这一个文件的标识。用户可以指定文件描述符，内核通过查找来找到文件管理结构file. 因此，文件描述符可以称为“文件句柄”。 内核文件">
-<meta name="keywords" content="linux">
+<meta name="description" content="在单生产者单消费者的环形队列缓冲模型中，消费线程改变readPos_,生产线程改变writePos_，两者不互相干扰，但是我们仍然需要保证readPos_和writePos_的原子性。一种选择是使用C++的std::atomic模板类型。但是这种做法对性能的影响是怎么样的呢？带着这个问题，我做了一下测试。 测试环境： Ubuntu 16.04虚拟机 主存频率：1600Mhz readPos和wri">
+<meta name="keywords" content="C++">
 <meta property="og:type" content="article">
-<meta property="og:title" content="linux文件IO">
-<meta property="og:url" content="http://shunlqing.github.io/2018/05/18/linux文件IO/index.html">
+<meta property="og:title" content="std::atomic">
+<meta property="og:url" content="http://shunlqing.github.io/2018/07/29/atomic_about/index.html">
 <meta property="og:site_name" content="Shunlqing&#39;s Blog">
-<meta property="og:description" content="文件描述符和句柄句柄，从一般意义上讲，句柄作为内核与用户的交互。用户无法指定内核对象的本体，内核可以提供一个整数值，在内核创建内核对象的时候，返回给用户。用户在想调用该对象的时候，可以指定。 例如，文件在内核的活动对象是一个个file结构，对于用户来说，文件描述符代表这一个文件的标识。用户可以指定文件描述符，内核通过查找来找到文件管理结构file. 因此，文件描述符可以称为“文件句柄”。 内核文件">
+<meta property="og:description" content="在单生产者单消费者的环形队列缓冲模型中，消费线程改变readPos_,生产线程改变writePos_，两者不互相干扰，但是我们仍然需要保证readPos_和writePos_的原子性。一种选择是使用C++的std::atomic模板类型。但是这种做法对性能的影响是怎么样的呢？带着这个问题，我做了一下测试。 测试环境： Ubuntu 16.04虚拟机 主存频率：1600Mhz readPos和wri">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p1lv91x5b.bkt.clouddn.com/struct_file.png">
-<meta property="og:updated_time" content="2018-05-18T11:37:43.121Z">
+<meta property="og:updated_time" content="2018-07-29T07:02:42.859Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="linux文件IO">
-<meta name="twitter:description" content="文件描述符和句柄句柄，从一般意义上讲，句柄作为内核与用户的交互。用户无法指定内核对象的本体，内核可以提供一个整数值，在内核创建内核对象的时候，返回给用户。用户在想调用该对象的时候，可以指定。 例如，文件在内核的活动对象是一个个file结构，对于用户来说，文件描述符代表这一个文件的标识。用户可以指定文件描述符，内核通过查找来找到文件管理结构file. 因此，文件描述符可以称为“文件句柄”。 内核文件">
-<meta name="twitter:image" content="http://p1lv91x5b.bkt.clouddn.com/struct_file.png">
+<meta name="twitter:title" content="std::atomic">
+<meta name="twitter:description" content="在单生产者单消费者的环形队列缓冲模型中，消费线程改变readPos_,生产线程改变writePos_，两者不互相干扰，但是我们仍然需要保证readPos_和writePos_的原子性。一种选择是使用C++的std::atomic模板类型。但是这种做法对性能的影响是怎么样的呢？带着这个问题，我做了一下测试。 测试环境： Ubuntu 16.04虚拟机 主存频率：1600Mhz readPos和wri">
 
 
 
@@ -132,13 +130,13 @@
 
 
 
-  <link rel="canonical" href="http://shunlqing.github.io/2018/05/18/linux文件IO/"/>
+  <link rel="canonical" href="http://shunlqing.github.io/2018/07/29/atomic_about/"/>
 
 
 
 
 
-  <title>linux文件IO | Shunlqing's Blog</title>
+  <title>std::atomic | Shunlqing's Blog</title>
   
 
 
@@ -299,7 +297,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/05/18/linux文件IO/">
+    <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/07/29/atomic_about/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
@@ -316,7 +314,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">linux文件IO</h1>
+          <h1 class="post-title" itemprop="name headline">std::atomic</h1>
         
 
         <div class="post-meta">
@@ -328,8 +326,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
-                2018-05-18
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-29T14:27:50+08:00">
+                2018-07-29
               </time>
             
 
@@ -351,19 +349,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/操作系统/" itemprop="url" rel="index">
-                    <span itemprop="name">操作系统</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/操作系统/技术笔记/" itemprop="url" rel="index">
-                    <span itemprop="name">技术笔记</span>
+                  <a href="/categories/编程语言/" itemprop="url" rel="index">
+                    <span itemprop="name">编程语言</span>
                   </a>
                 </span>
 
@@ -399,69 +386,34 @@
       
 
       
-        <h1 id="文件描述符和句柄"><a href="#文件描述符和句柄" class="headerlink" title="文件描述符和句柄"></a>文件描述符和句柄</h1><p>句柄，从一般意义上讲，句柄作为内核与用户的交互。用户无法指定内核对象的本体，内核可以提供一个整数值，在内核创建内核对象的时候，返回给用户。用户在想调用该对象的时候，可以指定。</p>
-<p>例如，文件在内核的活动对象是一个个file结构，对于用户来说，文件描述符代表这一个文件的标识。用户可以指定文件描述符，内核通过查找来找到文件管理结构file.</p>
-<p>因此，文件描述符可以称为“文件句柄”。</p>
-<h1 id="内核文件表"><a href="#内核文件表" class="headerlink" title="内核文件表"></a>内核文件表</h1><p>每个进程管理一张打开文件表，用以管理当前进程所打开的文件，称为“进程打开文件表”，保存在task_struct-&gt;files字段，是一个files_struct结构体。</p>
-<p>files_struct结构的功能是管理一个file结构<strong>指针</strong>数组，<strong>文件描述符</strong>就是用来索引该数组，从而找到真正的文件管理结构file.此外，files_struct的两个重要字段：</p>
-<ul>
-<li>close_on_exec_init: 表示当执行exec时要关闭的文件描述符位图</li>
-<li>open_fds_init: 保存打开的文件描述符位图</li>
-</ul>
-<h1 id="文件管理结构file"><a href="#文件管理结构file" class="headerlink" title="文件管理结构file"></a>文件管理结构file</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">file</span> &#123;</span></span><br><span class="line">    <span class="comment">/*...*/</span></span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> *<span class="title">f_op</span>;</span> 与该文件相关联的操作函数</span><br><span class="line">    <span class="keyword">atomic_t</span> f_count; 文件的引用计数(有多少进程打开该文件)</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> f_flags; 对应于open时指定的flag</span><br><span class="line">    <span class="keyword">mode_t</span> f_mode; 读写模式：open的<span class="keyword">mod_t</span> mode参数</span><br><span class="line">    <span class="keyword">off_t</span> f_pos; 该文件在当前进程中的文件偏移量</span><br><span class="line">    <span class="comment">/*...*/</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p><img src="http://p1lv91x5b.bkt.clouddn.com/struct_file.png" alt=""></p>
-<h1 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h1><h2 id="open操作"><a href="#open操作" class="headerlink" title="open操作"></a>open操作</h2><p>打开一个文件，内核都做了些什么呢？</p>
-<ul>
-<li>在进程打开文件表中找到一个未使用的文件描述符</li>
-<li>申请一个新的文件管理结构file,根据不同的打开标志和mode产生不同的行为和file结构。</li>
-<li>绑定文件描述符和对应的文件管理结构file，把文件描述符返回给用户。</li>
-</ul>
-<p>可见，open操作，内核主要消耗两种资源：文件描述符和文件管理结构file。</p>
-<p>open参数</p>
-<ul>
-<li>pathname : 文件路径</li>
-<li>flags: 打开标志</li>
-<li>mode：文件的权限位，只在创建文件时需要，并受到umask的影响。</li>
-</ul>
-<p><strong>每一次open操作,都将分配一个文件描述符和文件管理结构,即使打开的是同一个文件.</strong></p>
-<h2 id="close操作"><a href="#close操作" class="headerlink" title="close操作"></a>close操作</h2><p>close用于关闭文件描述符。而文件描述符可以是普通文件，也可以是设备，还可以是socket.在关闭时，VFS会根据不同的文件类型，执行不同的操作。这个实现机制由file结构的fop字段绑定的具体操作函数实现。</p>
-<p><strong>遗忘close造成的问题</strong></p>
-<ul>
-<li>文件描述符没有释放</li>
-<li>文件管理结构没有释放</li>
-<li>对于普通进程，在进程结束时，内核自动回收；但是对于常驻进程，问题相当严重。</li>
-</ul>
-<p><strong>如何查找文件资源泄露</strong>——lsof命令</p>
-<h2 id="文件偏移"><a href="#文件偏移" class="headerlink" title="文件偏移"></a>文件偏移</h2><p>文件偏移量是打开文件中比较重要的属性.它代表当前进程对<strong>当前打开文件</strong>的读写位置.一般情况下,读写操作都是从当前的偏移位置开始读写, 并且在读写结束之后更新偏移量.</p>
-<p>刚打开文件时, 文件偏移量为0;</p>
-<p>进程fork之后,父子进程的对同一打开文件的文件偏移量是一样的吗?后面解答.</p>
-<h2 id="读文件-read"><a href="#读文件-read" class="headerlink" title="读文件_read"></a>读文件_read</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> read(<span class="keyword">int</span> fd, <span class="keyword">void</span>* buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure>
-<p>最一般意义,read尝试从fd中读取count个字节到用户定义缓冲区buf中,并返回实际成功读取的字节数.</p>
-<p><strong>意外情况</strong>:返回值为-1</p>
-<ul>
-<li>errno = EAGAIN, EWOULDBLOCK: fd为非阻塞且没有数据可返回时</li>
-<li>errno = EINTR: 信号中断</li>
-</ul>
-<p><strong>部分读取</strong></p>
-<p>不同类型的文件出现部分读取的情况是不同的,根据具体绑定的fops-&gt;read函数而定:</p>
-<ul>
-<li>普通文件,到达文件末尾 EOF</li>
-<li>socket文件系统的UDP: UDP报文数据长度小于参数len时,返回实际的数据长度</li>
-<li>…(根据不同的类型小心处理)</li>
-</ul>
-<h2 id="写文件-write"><a href="#写文件-write" class="headerlink" title="写文件_write"></a>写文件_write</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span>*buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure>
-<p>write操作根据当前fd的文件偏移量, 写入count个字节数据.与read操作类似,同样会出现<strong>部分写</strong>的情况.</p>
-<p><strong>追加写</strong>–O_APPEND</p>
-<p>当使用O_APPEND以追加的形式打开文件的时候,每次写操作都会先定位到文件的末尾,然后再执行写操作.每次写操作获取到的都是文件(inode)的最新末尾位置(对inode加锁保护, 以避免多进程情况下竞争).</p>
-<h2 id="文件描述符的复制"><a href="#文件描述符的复制" class="headerlink" title="文件描述符的复制"></a>文件描述符的复制</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup</span><span class="params">(<span class="keyword">int</span> oldfd)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup2</span><span class="params">(<span class="keyword">int</span> oldfd, <span class="keyword">int</span> newfd)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup3</span><span class="params">(<span class="keyword">int</span> oldfd, <span class="keyword">int</span> newfd, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>dup:使用一个最小的未使用的文件描述符作为复制后的文件描述符</li>
-<li>dup2:使用用户指定的newfd来复制oldfd,如果newfd已经打开,就先关闭newfd,在复制oldfd(close+dup的原子性调用)</li>
-<li>dup3:支持O_CLOEXEC.表示新复制的fd在fork并执行exec之后,将关闭.</li>
-</ul>
-<p><strong>复制的只是文件描述符</strong></p>
-<p>新复制的文件描述符和旧的文件描述符指向的是同一个file文件管理结构,他们共享文件偏移量,文件读写模式,文件打开标志等等. file的创建仅仅在open操作的时候发生.</p>
-<h2 id="文件同步"><a href="#文件同步" class="headerlink" title="文件同步"></a>文件同步</h2><h2 id="文件截断"><a href="#文件截断" class="headerlink" title="文件截断"></a>文件截断</h2><h1 id="进程执行fork后，文件打开表和文件管理结构file"><a href="#进程执行fork后，文件打开表和文件管理结构file" class="headerlink" title="进程执行fork后，文件打开表和文件管理结构file"></a>进程执行fork后，文件打开表和文件管理结构file</h1>
+        <p>在单生产者单消费者的环形队列缓冲模型中，消费线程改变<code>readPos_</code>,生产线程改变<code>writePos_</code>，两者不互相干扰，但是我们仍然需要保证<code>readPos_</code>和<code>writePos_</code>的原子性。一种选择是使用C++的<code>std::atomic</code>模板类型。但是这种做法对性能的影响是怎么样的呢？带着这个问题，我做了一下测试。</p>
+<p>测试环境：</p>
+<pre><code>Ubuntu 16.04虚拟机
+主存频率：1600Mhz
+</code></pre><h2 id="readPos和writePos分别是内置类型size-t的时候"><a href="#readPos和writePos分别是内置类型size-t的时候" class="headerlink" title="readPos和writePos分别是内置类型size_t的时候"></a>readPos<em>和writePos</em>分别是内置类型size_t的时候</h2><p>对一个std::size_t类型进行1亿次的++操作。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="title">time_ns</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">ts</span>;</span></span><br><span class="line">    clock_gettime(CLOCK_REALTIME, &amp;ts);</span><br><span class="line">    <span class="keyword">return</span> ts.tv_nsec + ts.tv_sec*<span class="number">1000000000L</span>LU;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="keyword">size_t</span> a;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>执行结果：</p>
+<pre><code>100000000 times tests use 229754536 ns(2.2975 ns each)
+</code></pre><h2 id="readPos和writePos是std-atomic类型"><a href="#readPos和writePos是std-atomic类型" class="headerlink" title="readPos和writePos是std::atomic类型"></a>readPos<em>和writePos</em>是std::atomic<std::size_t>类型</std::size_t></h2><p><strong>在没有竞争的情况下：</strong><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="title">time_ns</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">ts</span>;</span></span><br><span class="line">    clock_gettime(CLOCK_REALTIME, &amp;ts);</span><br><span class="line">    <span class="keyword">return</span> ts.tv_nsec + ts.tv_sec*<span class="number">1000000000L</span>LU;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;<span class="built_in">std</span>::<span class="keyword">size_t</span>&gt; a;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha </span><br><span class="line">        &lt;&lt; <span class="string">"std::atomic&lt;std::size_t&gt; is lock_free? "</span></span><br><span class="line">        &lt;&lt; <span class="built_in">std</span>::atomic&lt;<span class="built_in">std</span>::<span class="keyword">size_t</span>&gt;().is_lock_free() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>执行结果：</p>
+<pre><code>std::atomic&lt;std::size_t&gt; is lock_free? true
+100000000 times tests use 985817387 ns(9.8582 ns each)
+</code></pre><p>现在我们开启另外一个线程，两个线程同时对a进行++操作，各执行1亿次，使其有竞争出现。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">threadFun</span><span class="params">(<span class="keyword">void</span>* p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span>&gt;&amp; a = *(<span class="keyword">static_cast</span>&lt;atomic&lt;<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span>&gt;*&gt;(p));</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;<span class="built_in">std</span>::<span class="keyword">size_t</span>&gt; a;</span><br><span class="line">    a = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">pthread_t</span> t;</span><br><span class="line">    pthread_create(&amp;t, <span class="literal">NULL</span>, threadFun, (<span class="keyword">void</span>*)&amp;a);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha </span><br><span class="line">        &lt;&lt; <span class="string">"std::atomic&lt;std::size_t&gt; is lock_free? "</span></span><br><span class="line">        &lt;&lt; <span class="built_in">std</span>::atomic&lt;<span class="built_in">std</span>::<span class="keyword">size_t</span>&gt;().is_lock_free() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">    pthread_join(t, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="built_in">endl</span>; <span class="comment">//输出最终的结果</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行结果：</p>
+<pre><code>std::atomic&lt;std::size_t&gt; is lock_free? true
+100000000 times tests use 1695992960 ns(16.9599 ns each)
+100000000 times tests use 1859780698 ns(18.5978 ns each)
+200000000
+</code></pre><h2 id="atomic模板类型不是lock-free"><a href="#atomic模板类型不是lock-free" class="headerlink" title="atomic模板类型不是lock_free"></a>atomic模板类型不是lock_free</h2><p>我们定义一个Test类，该类型如果作为atomic的模板参数，则不是lock_free。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> b[<span class="number">100</span>];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">threadFun</span><span class="params">(<span class="keyword">void</span>* p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;Test&gt;&amp; a = *(<span class="keyword">static_cast</span>&lt;atomic&lt;Test&gt;*&gt;(p));    </span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ((Test)a).b[<span class="number">0</span>]++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;Test&gt; a;</span><br><span class="line">    ((Test)a).b[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">pthread_t</span> t;</span><br><span class="line">    pthread_create(&amp;t, <span class="literal">NULL</span>, threadFun, (<span class="keyword">void</span>*)&amp;a);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha </span><br><span class="line">        &lt;&lt; <span class="string">"std::atomic&lt;Test&gt; is lock_free? "</span></span><br><span class="line">        &lt;&lt; <span class="built_in">std</span>::atomic&lt;Test&gt;().is_lock_free() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ((Test)a).b[<span class="number">0</span>]++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">    pthread_join(t, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; ((Test)a).b[<span class="number">0</span>] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行结果：</p>
+<pre><code>std::atomic&lt;Test&gt; is lock_free? false
+100000000 times tests use 33430659148 ns(334.3066 ns each)
+100000000 times tests use 33619378185 ns(336.1938 ns each)
+1615295328
+</code></pre><p>可见，使用atomic封装原子对象，针对不同的类型，其底层手段是不一样的，开销也就不一样。而无锁（lock_free）的底层实现比加锁保证原子性的底层实现，开销差异非常大，多大几十倍。</p>
+<p>回到最开始的问题，如果使用的std::size_t类型，是无锁的。</p>
+
       
     </div>
     
@@ -478,7 +430,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/linux/" rel="tag"><i class="fa fa-tag"></i> linux</a>
+            <a href="/tags/C/" rel="tag"><i class="fa fa-tag"></i> C++</a>
           
         </div>
       
@@ -491,8 +443,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/05/18/linux_ipc_pipe/" rel="next" title="管道——花园软水管">
-                <i class="fa fa-chevron-left"></i> 管道——花园软水管
+              <a href="/2018/07/29/new_delete_about/" rel="next" title="new和malloc">
+                <i class="fa fa-chevron-left"></i> new和malloc
               </a>
             
           </div>
@@ -500,10 +452,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/05/18/process_environment/" rel="prev" title="进程环境">
-                进程环境 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -647,7 +595,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#文件描述符和句柄"><span class="nav-text">文件描述符和句柄</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#内核文件表"><span class="nav-text">内核文件表</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#文件管理结构file"><span class="nav-text">文件管理结构file</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#文件操作"><span class="nav-text">文件操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#open操作"><span class="nav-text">open操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#close操作"><span class="nav-text">close操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件偏移"><span class="nav-text">文件偏移</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#读文件-read"><span class="nav-text">读文件_read</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#写文件-write"><span class="nav-text">写文件_write</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件描述符的复制"><span class="nav-text">文件描述符的复制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件同步"><span class="nav-text">文件同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件截断"><span class="nav-text">文件截断</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#进程执行fork后，文件打开表和文件管理结构file"><span class="nav-text">进程执行fork后，文件打开表和文件管理结构file</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#readPos和writePos分别是内置类型size-t的时候"><span class="nav-text">readPos和writePos分别是内置类型size_t的时候</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#readPos和writePos是std-atomic类型"><span class="nav-text">readPos和writePos是std::atomic类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#atomic模板类型不是lock-free"><span class="nav-text">atomic模板类型不是lock_free</span></a></li></ol></div>
             
 
           </div>

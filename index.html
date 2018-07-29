@@ -293,6 +293,174 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/07/29/atomic_about/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/interstellar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/29/atomic_about/" itemprop="url">std::atomic</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-29T14:27:50+08:00">
+                2018-07-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/编程语言/" itemprop="url" rel="index">
+                    <span itemprop="name">编程语言</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>在单生产者单消费者的环形队列缓冲模型中，消费线程改变<code>readPos_</code>,生产线程改变<code>writePos_</code>，两者不互相干扰，但是我们仍然需要保证<code>readPos_</code>和<code>writePos_</code>的原子性。一种选择是使用C++的<code>std::atomic</code>模板类型。但是这种做法对性能的影响是怎么样的呢？带着这个问题，我做了一下测试。</p>
+<p>测试环境：</p>
+<pre><code>Ubuntu 16.04虚拟机
+主存频率：1600Mhz
+</code></pre><h2 id="readPos和writePos分别是内置类型size-t的时候"><a href="#readPos和writePos分别是内置类型size-t的时候" class="headerlink" title="readPos和writePos分别是内置类型size_t的时候"></a>readPos<em>和writePos</em>分别是内置类型size_t的时候</h2><p>对一个std::size_t类型进行1亿次的++操作。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="title">time_ns</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">ts</span>;</span></span><br><span class="line">    clock_gettime(CLOCK_REALTIME, &amp;ts);</span><br><span class="line">    <span class="keyword">return</span> ts.tv_nsec + ts.tv_sec*<span class="number">1000000000L</span>LU;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="keyword">size_t</span> a;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>执行结果：</p>
+<pre><code>100000000 times tests use 229754536 ns(2.2975 ns each)
+</code></pre><h2 id="readPos和writePos是std-atomic类型"><a href="#readPos和writePos是std-atomic类型" class="headerlink" title="readPos和writePos是std::atomic类型"></a>readPos<em>和writePos</em>是std::atomic<std::size_t>类型</std::size_t></h2><p><strong>在没有竞争的情况下：</strong><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="title">time_ns</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">ts</span>;</span></span><br><span class="line">    clock_gettime(CLOCK_REALTIME, &amp;ts);</span><br><span class="line">    <span class="keyword">return</span> ts.tv_nsec + ts.tv_sec*<span class="number">1000000000L</span>LU;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;<span class="built_in">std</span>::<span class="keyword">size_t</span>&gt; a;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha </span><br><span class="line">        &lt;&lt; <span class="string">"std::atomic&lt;std::size_t&gt; is lock_free? "</span></span><br><span class="line">        &lt;&lt; <span class="built_in">std</span>::atomic&lt;<span class="built_in">std</span>::<span class="keyword">size_t</span>&gt;().is_lock_free() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>执行结果：</p>
+<pre><code>std::atomic&lt;std::size_t&gt; is lock_free? true
+100000000 times tests use 985817387 ns(9.8582 ns each)
+</code></pre><p>现在我们开启另外一个线程，两个线程同时对a进行++操作，各执行1亿次，使其有竞争出现。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">threadFun</span><span class="params">(<span class="keyword">void</span>* p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span>&gt;&amp; a = *(<span class="keyword">static_cast</span>&lt;atomic&lt;<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span>&gt;*&gt;(p));</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;<span class="built_in">std</span>::<span class="keyword">size_t</span>&gt; a;</span><br><span class="line">    a = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">pthread_t</span> t;</span><br><span class="line">    pthread_create(&amp;t, <span class="literal">NULL</span>, threadFun, (<span class="keyword">void</span>*)&amp;a);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha </span><br><span class="line">        &lt;&lt; <span class="string">"std::atomic&lt;std::size_t&gt; is lock_free? "</span></span><br><span class="line">        &lt;&lt; <span class="built_in">std</span>::atomic&lt;<span class="built_in">std</span>::<span class="keyword">size_t</span>&gt;().is_lock_free() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">    pthread_join(t, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="built_in">endl</span>; <span class="comment">//输出最终的结果</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行结果：</p>
+<pre><code>std::atomic&lt;std::size_t&gt; is lock_free? true
+100000000 times tests use 1695992960 ns(16.9599 ns each)
+100000000 times tests use 1859780698 ns(18.5978 ns each)
+200000000
+</code></pre><h2 id="atomic模板类型不是lock-free"><a href="#atomic模板类型不是lock-free" class="headerlink" title="atomic模板类型不是lock_free"></a>atomic模板类型不是lock_free</h2><p>我们定义一个Test类，该类型如果作为atomic的模板参数，则不是lock_free。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> b[<span class="number">100</span>];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">threadFun</span><span class="params">(<span class="keyword">void</span>* p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;Test&gt;&amp; a = *(<span class="keyword">static_cast</span>&lt;atomic&lt;Test&gt;*&gt;(p));    </span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ((Test)a).b[<span class="number">0</span>]++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;Test&gt; a;</span><br><span class="line">    ((Test)a).b[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">pthread_t</span> t;</span><br><span class="line">    pthread_create(&amp;t, <span class="literal">NULL</span>, threadFun, (<span class="keyword">void</span>*)&amp;a);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha </span><br><span class="line">        &lt;&lt; <span class="string">"std::atomic&lt;Test&gt; is lock_free? "</span></span><br><span class="line">        &lt;&lt; <span class="built_in">std</span>::atomic&lt;Test&gt;().is_lock_free() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> TESTTIMES = <span class="number">100000000</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> start_ns = time_ns();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; TESTTIMES; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ((Test)a).b[<span class="number">0</span>]++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">unsigned</span> delta = time_ns()-start_ns;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%llu times tests use %llu ns(%.4f ns each)\n"</span>, TESTTIMES, delta, (delta)/(<span class="keyword">float</span>)TESTTIMES);</span><br><span class="line">    pthread_join(t, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; ((Test)a).b[<span class="number">0</span>] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行结果：</p>
+<pre><code>std::atomic&lt;Test&gt; is lock_free? false
+100000000 times tests use 33430659148 ns(334.3066 ns each)
+100000000 times tests use 33619378185 ns(336.1938 ns each)
+1615295328
+</code></pre><p>可见，使用atomic封装原子对象，针对不同的类型，其底层手段是不一样的，开销也就不一样。而无锁（lock_free）的底层实现比加锁保证原子性的底层实现，开销差异非常大，多大几十倍。</p>
+<p>回到最开始的问题，如果使用的std::size_t类型，是无锁的。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/07/29/new_delete_about/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1942,134 +2110,6 @@ find算法。无比繁琐。
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/05/18/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="shunlqing">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/interstellar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Shunlqing's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/18/hello-world/" itemprop="url">Hexo Start</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
-                2018-05-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2124,7 +2164,7 @@ find算法。无比繁琐。
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-count">22</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
