@@ -293,12 +293,196 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/07/29/new_delete_about/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/interstellar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/29/new_delete_about/" itemprop="url">new和malloc</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-29T01:01:45+08:00">
+                2018-07-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/编程语言/" itemprop="url" rel="index">
+                    <span itemprop="name">编程语言</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>刚学习new和delete的时候，我们就被忠告：</p>
+<pre><code>new和delete，new[]和delete[]要配对使用，不能混淆使用。
+</code></pre><p>具体是为什么呢？我们都知道new和malloc都是用来分配内存的。那么他们都有什么区别呢？简单来说，malloc仅仅是分配指定大小的内存，而new不仅分配了内存，还在内存上面构造了对象。好比如，你去申请一块100平的地建房子，malloc就真的只是给你一块100平方的地，上面什么也没有；而new不仅给你100平方的地，而且按照你的意愿，已经在上面改好了房子，你直接入住就可以了。如果是new[]操作，就像是给你建好了一排别墅的感觉。</p>
+<h2 id="new和malloc"><a href="#new和malloc" class="headerlink" title="new和malloc"></a>new和malloc</h2><p>对于内置类型：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>* p1 = (<span class="keyword">int</span>*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span> <span class="keyword">int</span>);</span><br><span class="line">    <span class="keyword">int</span>* p2 = <span class="keyword">new</span> <span class="keyword">int</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于内置类型，malloc和new都是分配了指定大小的内存，然后简单初始化为0。内置类型没有构造函数，也不需要调用。</p>
+<p>对于没有自定义构造函数的类型：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test* p1 = (Test*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Test));</span><br><span class="line">    Test* p2 = <span class="keyword">new</span> Test();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于没有自定义构造函数的类型来说，malloc和new也是分配了指定类对象大小的内存，malloc简单初始化为0（可能有的甚至不做初始化），new也是这样么？我们为Test类增加一个虚函数。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span></span>&#123;&#125;;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test* p1 = (Test*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Test));</span><br><span class="line">    Test* p2 = <span class="keyword">new</span> Test();</span><br><span class="line">    <span class="comment">// p1-&gt;foo(); 会发生Segmentation fault</span></span><br><span class="line">    p2-&gt;foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>虽然没有自定义构造函数，但是还是看出差别，因为有虚函数的类对象需要有一个虚表指针指向虚表，用于在运行期动态获取虚函数的地址，new不仅分配了对象内存，而且并在对象内存的特定位置构造好了虚表指针，malloc根本不会这样做。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Test() &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Test()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test* p1 = (Test*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Test));</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"---------"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    Test* p2 = <span class="keyword">new</span> Test();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行结果：</p>
+<pre><code>---------
+Test()
+</code></pre><p>可见，对于有自定义构造函数的类来说，new会调用自定义构造函数。</p>
+<h2 id="new-和malloc"><a href="#new-和malloc" class="headerlink" title="new[]和malloc"></a>new[]和malloc</h2><p>对于new[]和malloc分配内置类型或没有自定义构造函数类的对象数组，其差别基本跟上面所讲的差不多。</p>
+<ol>
+<li><p>对于有自定义构造函数的类，new[]需要调用相应次数的构造函数。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Test() &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Test()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ~Test() &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"~Test()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test* p1 = (Test*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Test)* <span class="number">5</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"---------"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    Test* p2 = <span class="keyword">new</span> Test[<span class="number">5</span>]();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<p> Test()<br> Test()<br> Test()<br> Test()<br> Test()</p>
+</li>
+<li><p>有自定义析构函数和没有自定义析构函数的区别</p>
+</li>
+</ol>
+<p>测试环境是：Ubuntu 16.04 64位</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Test() &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Test()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ~Test() &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"~Test()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test* p1 = (Test*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Test)* <span class="number">5</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"---------"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    Test* p2 = <span class="keyword">new</span> Test[<span class="number">5</span>]();</span><br><span class="line">    <span class="comment">//delete p2; //用delete代替delete[], 产生coredump</span></span><br><span class="line">    <span class="keyword">delete</span> (<span class="keyword">char</span>*)p2 - <span class="number">8</span>; <span class="comment">//不会core dump，但是不会执行析构函数。</span></span><br><span class="line">    <span class="keyword">delete</span> p1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用valgrind检测，发现，<code>delete ((char*)p2 - 8)</code>不会出现内存泄漏，也就是说已经正常回收。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 没有自定义析构函数的情况下</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Test() &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Test()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ~Test() &#123;</span></span><br><span class="line">    <span class="comment">//     std::cout &lt;&lt; "~Test()" &lt;&lt; std::endl;</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test* p1 = (Test*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Test)* <span class="number">5</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"---------"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    Test* p2 = <span class="keyword">new</span> Test[<span class="number">5</span>]();</span><br><span class="line">    <span class="keyword">delete</span> p2; <span class="comment">//不会产生core dump</span></span><br><span class="line">    <span class="comment">// delete (char*)p2 - 8; //会core dump</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们看下，在有自定义析构函数的情况下，多出来的8字节（64位机）是干嘛的。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Test() &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Test()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ~Test() &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"~Test()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test* p2 = <span class="keyword">new</span> Test[<span class="number">5</span>]();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; *(<span class="keyword">int</span>*)((<span class="keyword">char</span>*)p2<span class="number">-8</span>) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">delete</span>[] p2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<pre><code>Test()
+Test()
+Test()
+Test()
+Test()
+5
+~Test()
+~Test()
+~Test()
+~Test()
+~Test()
+</code></pre><p>存储了数字刚好是数组的大小。由此我们推测，这不仅仅是记录数组存储对象的个数，因为个数本身没什么意义。更重要的是，<strong>要正确执行相应次数的析构函数</strong>，这也是为什么没有自定义构造函数就不需要记录这个数字，使用<code>delete ptr-8</code>(64位机)会引发core dump。</p>
+<p>所以delete和delete[]最好不要混用。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/05/24/C++1xThreadPool/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
+      <meta itemprop="image" content="/images/interstellar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -454,154 +638,12 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/05/21/2018-5-21Linux_Process/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="shunlqing">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Shunlqing's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/21/2018-5-21Linux_Process/" itemprop="url">从几个维度认识Linux进程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-21T00:00:00+08:00">
-                2018-05-21
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/操作系统/" itemprop="url" rel="index">
-                    <span itemprop="name">操作系统</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>本文关注Linux进程</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/05/21/2018-5-21STL_Iterator/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
+      <meta itemprop="image" content="/images/interstellar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -791,12 +833,154 @@ find算法。无比繁琐。
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/05/21/2018-5-21Linux_Process/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="shunlqing">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/interstellar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Shunlqing's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/21/2018-5-21Linux_Process/" itemprop="url">从几个维度认识Linux进程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-21T00:00:00+08:00">
+                2018-05-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/操作系统/" itemprop="url" rel="index">
+                    <span itemprop="name">操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本文关注Linux进程</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/05/19/2018_5_19LinuxKernel_WaitQueue/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
+      <meta itemprop="image" content="/images/interstellar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -963,7 +1147,7 @@ find算法。无比繁琐。
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
+      <meta itemprop="image" content="/images/interstellar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -1194,7 +1378,7 @@ find算法。无比繁琐。
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
+      <meta itemprop="image" content="/images/interstellar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -1408,7 +1592,7 @@ find算法。无比繁琐。
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
+      <meta itemprop="image" content="/images/interstellar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -1604,7 +1788,7 @@ find算法。无比繁琐。
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
+      <meta itemprop="image" content="/images/interstellar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -1776,7 +1960,7 @@ find算法。无比繁琐。
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="shunlqing">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
+      <meta itemprop="image" content="/images/interstellar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -1886,190 +2070,11 @@ find算法。无比繁琐。
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://shunlqing.github.io/2018/05/18/NB_IO/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="shunlqing">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/shunlqing.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Shunlqing's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/18/NB_IO/" itemprop="url">非阻塞式IO</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-18T19:37:43+08:00">
-                2018-05-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/技术笔记/" itemprop="url" rel="index">
-                    <span itemprop="name">技术笔记</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h1><h2 id="阻塞与非阻塞的概念"><a href="#阻塞与非阻塞的概念" class="headerlink" title="阻塞与非阻塞的概念"></a>阻塞与非阻塞的概念</h2><p>在用户进程或者线程进行系统调用进入内核的时候，如果不能马上满足条件，内核对调用者采取不同的行为，分为<strong>“阻塞”和”非阻塞“</strong>两种。”<strong>阻塞</strong>“表示如果系统调用不能马上获得满足而返回，就将调用者（进程或线程）挂起，等到满足条件，内核执行完系统调用，重新恢复调用者。”<strong>非阻塞</strong>“表示如果系统调用不能满足，则立即返回，并设置错误信息以告知调用者，该系统调用因何不能满足。</p>
-<p>从以上看，”阻塞“虽然使用比较简单，但是<strong>很被动</strong>，会出现”永久阻塞“而导致无法处理的问题，设想一下，客户端进程阻塞等待接受服务器的消息，但是这个服务器因为某种原因崩溃了，如此客户端就会永久阻塞。相反，”非阻塞“技术给了程序员更大的灵活性，只要能够合理处理各种情况便能够更好的提高效率。</p>
-<p>总之，非阻塞调用相对与阻塞调用有几个好处:</p>
-<ul>
-<li>不会出现“永久阻塞”（设置超时也可解决永久阻塞问题）</li>
-<li>同时监听多个IO复用的程序模型，如果使用阻塞调用，可能出现顾此失彼的情况。即，系统调用阻塞在某个IO上时，可能有另一个IO已经就绪，而它不能被及时响应。</li>
-</ul>
-<p>也因为如此，使用非阻塞技术要体现这些优势。</p>
-<h2 id="网络编程背景下的非阻塞式IO"><a href="#网络编程背景下的非阻塞式IO" class="headerlink" title="网络编程背景下的非阻塞式IO"></a>网络编程背景下的非阻塞式IO</h2><p>可能阻塞的套接字调用分为以下四类：</p>
-<ul>
-<li>输入操作（read、readv、recv、recvfrom、recvmsg五个函数）</li>
-<li>输出操作(write、writev、send、sendto、sendmsg五个函数)</li>
-<li>接受外来连接，accept函数</li>
-<li>发起外出连接，用于TCP的connect函数</li>
-</ul>
-<h1 id="二、非阻塞读和写"><a href="#二、非阻塞读和写" class="headerlink" title="二、非阻塞读和写"></a>二、非阻塞读和写</h1><p>UNP给出一个数据，echo服务下的客户端不同版本str_cli函数，测试从一个Solaris客户主机想RTT为175毫秒的一个服务器主机复制2000行文本，所花时间的不同：</p>
-<ul>
-<li>354.0s，停等版本</li>
-<li>12.3s，select+阻塞式IO版本</li>
-<li>6.9s, select+非阻塞IO版本</li>
-<li>8.7s, fork版本（多进程）</li>
-<li>8.5s，多线程版本<br>从这个数据可以看出：</li>
-<li>一、IO复用模型的使用确实大大加快了IO的处理</li>
-<li>二、IO复用模型搭配非阻塞技术可以再提高效率（但是会提高编程的复杂性）</li>
-</ul>
-<p>UNP推荐：相对于select+非阻塞IO，最好使用效率差不多、但是编程更简单的多进程模型。</p>
-<h2 id="对UNP书上str-cli函数的select-非阻塞式IO的注解"><a href="#对UNP书上str-cli函数的select-非阻塞式IO的注解" class="headerlink" title="对UNP书上str_cli函数的select+非阻塞式IO的注解"></a>对UNP书上str_cli函数的select+非阻塞式IO的注解</h2><p>本版本需要做的工作：</p>
-<ul>
-<li>维护两个缓冲区;</li>
-<li>使用selectIO复用，监听并处理四个IO;</li>
-<li>对所有监听的IO都设置成非阻塞IO;</li>
-<li>恰当处理终止条件，当服务器终止连接或者客户端标准输入得到EOF;</li>
-</ul>
-<p>动态性强，但是编程要考虑的情况多。UNP提供了效率差不多，但是编程简单的fork版本。该版本做的工作较少：</p>
-<ul>
-<li>fork出子进程，负责阻塞等待套接字可读，并将收到的消息输出到标准输出；</li>
-<li>父进程负责阻塞等待标准输入可读，并将收到的消息写入套接字；</li>
-</ul>
-<h1 id="三、非阻塞connect"><a href="#三、非阻塞connect" class="headerlink" title="三、非阻塞connect"></a>三、非阻塞connect</h1>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2105,7 +2110,7 @@ find算法。无比繁琐。
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
               <img class="site-author-image" itemprop="image"
-                src="/images/shunlqing.jpg"
+                src="/images/interstellar.jpg"
                 alt="shunlqing" />
             
               <p class="site-author-name" itemprop="name">shunlqing</p>
@@ -2119,7 +2124,7 @@ find算法。无比繁琐。
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">21</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2141,7 +2146,7 @@ find算法。无比繁琐。
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
